@@ -1,0 +1,43 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# --- Virtualno okolje ---
+.venv/
+venv/
+env/
+
+# --- Lokalne nastavitve in skrivnosti ---
+.env
+.env.*
+!.env.example
+instance/
+
+# --- Testi in pokritost ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Naložene priponke (prijave težav) ---
+uploads/
+
+# --- Baza: lokalni izvozi in dnevniki ---
+*.sql.gz
+*.dump
+*.log
+
+# --- Frontend (če bo kasneje uporabljen npm) ---
+node_modules/
+
+# --- Urejevalniki ---
+.vscode/
+.idea/
+*.swp
+
+# --- Operacijski sistem ---
+.DS_Store
+Thumbs.db
+desktop.ini
