@@ -70,4 +70,4 @@ git push -u origin feature/ime-spremembe
 
 ## Avtor
 
-Husidić
+Husidić ss
