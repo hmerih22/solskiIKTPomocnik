@@ -9,8 +9,6 @@ date: 2026-10-23
 
 Aplikacija je namenjena samo zaposlenim ene šole. Vloga uporabnika (učitelj, IKT skrbnik ali administrator) določa, katere operacije sme izvajati. Če bi si uporabnik sam ustvaril račun ali izbral vlogo, bi lahko do evidenc šolske opreme in prijav dostopale osebe, ki niso zaposlene na šoli.
 
-Kako zagotoviti, da imajo dostop samo upravičene osebe s pravilno vlogo?
-
 ## Obravnavane možnosti
 
 * Brez javne registracije: prvega administratorja ustvari lokalni ukaz, nadaljnje račune pa administrator v aplikaciji

@@ -9,12 +9,10 @@ date: 2026-10-23
 
 Aplikacijo uporabljajo zaposleni prek brskalnika. Zaledje mora pri vsaki zahtevi vedeti, kdo je prijavljen in s katero vlogo. Deaktivacija računa ali sprememba vloge mora učinkovati že ob naslednji zahtevi, tudi pri že prijavljenem uporabniku. Gesla morajo biti shranjena varno.
 
-Kateri mehanizem avtentikacije ustreza aplikaciji, ki jo uporabljamo izključno prek brskalnika?
 
 ## Obravnavane možnosti
 
 * Sejna prijava s Flask-Login (podpisan sejni piškotek) in zgoščevanje gesel z Werkzeug
-* Avtentikacija z žetoni (JWT)
 * Prijava prek zunanjega ponudnika (npr. šolski Microsoft/Google račun, OAuth/OIDC)
 * Lastna implementacija upravljanja sej
 

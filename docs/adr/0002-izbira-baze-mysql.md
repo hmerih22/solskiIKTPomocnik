@@ -9,18 +9,16 @@ date: 2026-10-23
 
 Podatki so izrazito povezani: rezervacija pripada uporabniku in opremi, oprema učilnici, prijava težave pa prijavitelju, odgovornemu skrbniku ter opremi in/ali učilnici. Pravila zahtevajo enolične vrednosti (e-pošta, inventarna številka, oznaka učilnice), referenčno celovitost in atomarne operacije, ki preprečijo dvojno rezervacijo ali dvojni prevzem prijave.
 
-Katera vrsta podatkovne baze zanesljivo uveljavi povezave, omejitve in transakcije, ki jih zahtevajo pravila sistema?
 
 ## Obravnavane možnosti
 
-* MySQL 8.4 z InnoDB
+* MySQL
 * PostgreSQL
 * SQLite
-* Dokumentna baza (npr. MongoDB)
 
 ## Izid odločitve
 
-Izbrana možnost: »MySQL 8.4 z InnoDB«, ker relacijski model neposredno izrazi pet povezanih entitet s tujimi ključi in enoličnimi omejitvami. InnoDB podpira transakcije in zaklepanje vrstic (`SELECT ... FOR UPDATE`), na katerih temelji preprečevanje prekrivanj ([ADR-0008](0008-transakcije-z-zaklepanjem-pri-kljucnih-operacijah.md)). PostgreSQL bi bil tehnično enakovreden ali celo boljši, saj podpira izključitvene omejitve za intervale. MySQL smo izbrali, ker je razvijalcu bolj poznan in ker sta MySQL Workbench in šolska infrastruktura že na voljo. SQLite ni primeren za sočasne zapise več uporabnikov. Dokumentna baza ne bi uveljavila povezav in bi pravila doslednosti prenesla v aplikacijo.
+MySQL, ker podpira relacije in transakcije ter je primerna za povezane podatke načrtovane aplikacije. SQLite je primernejši za enostavno lokalno rabo, PostgreSQL pa bi bil prav tako ustrezen, a za obseg projekta ne prinaša odločilne prednosti.
 
 ### Posledice
 

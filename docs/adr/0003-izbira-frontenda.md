@@ -9,13 +9,11 @@ date: 2026-10-23
 
 Uporabniški vmesnik je sestavljen predvsem iz seznamov (oprema, rezervacije, prijave) in obrazcev (rezervacija, prijava težave, urejanje računov). Ni zahtev po delu brez povezave ali po sprotnem osveževanju v realnem času. Odločiti je treba, ali naj HTML sestavlja strežnik ali ločena odjemalska aplikacija, ki komunicira prek API.
 
-Kateri pristop k uporabniškemu vmesniku zadosti zahtevam MVP z najmanj dodatne kompleksnosti?
 
 ## Obravnavane možnosti
 
 * Strežniško upodabljanje s Flask in Jinja predlogami (HTML, CSS, po potrebi malo JavaScripta)
 * Ločena enostranska aplikacija (SPA, npr. React ali Vue) in REST API v Flasku
-* Strežniško upodabljanje z dodano knjižnico za delne posodobitve (npr. htmx)
 
 ## Izid odločitve
 
