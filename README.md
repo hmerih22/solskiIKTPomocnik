@@ -32,18 +32,6 @@ Učitelji preverijo razpoložljivost opreme, jo rezervirajo brez prekrivanja ter
 | [06 – Wireframes](docs/06-wireframes.md) | Žični prikazi ključnih zaslonov |
 | [Arhitekturne odločitve (ADR)](docs/adr/) | Zapisi arhitekturnih odločitev po predlogi MADR |
 
-### Arhitekturne odločitve
-
-| ADR | Odločitev |
-| --- | --- |
-| [0001](docs/adr/0001-python-in-flask-za-zaledje.md) | Python in Flask za zaledje |
-| [0002](docs/adr/0002-enotna-aplikacija-z-locenimi-moduli.md) | Enotna aplikacija z ločenimi moduli |
-| [0003](docs/adr/0003-strezniski-html-z-jinja-predlogami.md) | Strežniško sestavljen HTML z Jinja predlogami |
-| [0004](docs/adr/0004-relacijska-baza-mysql.md) | Relacijska baza MySQL |
-| [0005](docs/adr/0005-parametrizirane-sql-poizvedbe-brez-orm.md) | Parametrizirane SQL-poizvedbe brez ORM |
-| [0006](docs/adr/0006-sejna-prijava-s-flask-login.md) | Sejna prijava s Flask-Login |
-| [0007](docs/adr/0007-brez-javne-registracije.md) | Brez javne registracije |
-| [0008](docs/adr/0008-transakcije-z-zaklepanjem-pri-kljucnih-operacijah.md) | Transakcije z zaklepanjem pri ključnih operacijah |
 
 ## Struktura repozitorija
 
@@ -57,7 +45,7 @@ Učitelji preverijo razpoložljivost opreme, jo rezervirajo brez prekrivanja ter
 
 ## Način dela (GitHub Flow)
 
-Veja `main` je zaščitena. Vse spremembe nastanejo na ločeni veji (npr. `feature/rezervacije`) in se v `main` združijo prek pull requesta.
+Veja `main` je zaščitena. Vse spremembe nastanejo na ločeni veji (npr. `feature/razvoj`) in se v `main` združijo prek pull requesta.
 
 ```bash
 git switch -c feature/ime-spremembe
@@ -70,4 +58,4 @@ git push -u origin feature/ime-spremembe
 
 ## Avtor
 
-Husidić ss
+Hušidić Merih
