@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Prijava #{{ prijava.id }}{% endblock %}
+{% block vsebina %}
+  <p>
+    {% if current_user.je_skrbnik %}<a href="{{ url_for('prijave.vse') }}">← Vse prijave</a>
+    {% else %}<a href="{{ url_for('prijave.moje') }}">← Moje prijave</a>{% endif %}
+  </p>
+  <div class="naslovna-vrstica">
+    <h1>#{{ prijava.id }} {{ prijava.naslov }}</h1>
+    {{ m.status_prijave(prijava.status) }}
+  </div>
+
+  <div class="mreza mreza-2">
+    <section class="kartica">
+      <h2>Podatki o prijavi</h2>
+      <dl class="podatki">
+        <dt>Prijavitelj</dt><dd>{{ prijava.prijavitelj_ime }} {{ prijava.prijavitelj_priimek }}</dd>
+        <dt>Oddana</dt><dd>{{ prijava.ustvarjena_ob | cas }}</dd>
+        {% if prijava.oprema_naziv %}
+          <dt>Oprema</dt><dd>{{ prijava.oprema_naziv }} ({{ prijava.inventarna_stevilka }}) {{ m.stanje_opreme(prijava.oprema_stanje) }}</dd>
+        {% endif %}
+        {% if prijava.ucilnica_oznaka %}
+          <dt>Učilnica</dt><dd>{{ prijava.ucilnica_oznaka }} – {{ prijava.ucilnica_naziv }}</dd>
+        {% endif %}
+        <dt>Odgovorni skrbnik</dt>
+        <dd>{% if prijava.skrbnik_ime %}{{ prijava.skrbnik_ime }} {{ prijava.skrbnik_priimek }}
+            (prevzeto {{ prijava.prevzeta_ob | cas }}){% else %}še ni določen{% endif %}</dd>
+      </dl>
+      <h3>Opis težave</h3>
+      <p class="besedilo">{{ prijava.opis }}</p>
+
+      {% if priponke %}
+        <h3>Priponke</h3>
+        <ul class="seznam">
+          {% for p in priponke %}
+            <li><a href="{{ url_for('prijave.priponka', id_priponke=p.id) }}" target="_blank" rel="noopener">{{ p.izvirno_ime }}</a>
+              <small>({{ (p.velikost / 1024) | round(0) | int }} KiB)</small></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if prijava.status == "resena" %}
+        <h3>Rešitev</h3>
+        <p class="besedilo">{{ prijava.resitev }}</p>
+        <p><small>Zaključeno {{ prijava.resena_ob | cas }}</small></p>
+      {% endif %}
+    </section>
+
+    {% if current_user.je_skrbnik %}
+    <section class="kartica">
+      <h2>Obravnava</h2>
+
+      {% if prijava.status == "nova" %}
+        <p>Prijava še nima odgovornega skrbnika.</p>
+        {{ m.gumb_post(url_for('prijave.prevzem', id_prijave=prijava.id), "Prevzemi prijavo") }}
+      {% endif %}
+
+      {% if lahko_zakljuci %}
+        <form method="post" action="{{ url_for('prijave.zakljucek', id_prijave=prijava.id) }}" novalidate>
+          {{ resitev.hidden_tag() }}
+          {{ m.polje(resitev.resitev, rows=4, placeholder="Opiši izvedene ukrepe in rešitev") }}
+          {{ resitev.potrdi(class="gumb") }}
+        </form>
+      {% elif prijava.status == "v_obravnavi" %}
+        <p>Prijavo obravnava drug skrbnik.</p>
+      {% endif %}
+
+      {% if current_user.je_administrator and prijava.status == "v_obravnavi" %}
+        <h3>Prerazporeditev</h3>
+        <form method="post" action="{{ url_for('prijave.prerazporeditev', id_prijave=prijava.id) }}">
+          {{ prazen.hidden_tag() }}
+          {{ m.polje(prerazporeditev.skrbnik_id) }}
+          {{ prerazporeditev.potrdi(class="gumb gumb-drugotni") }}
+        </form>
+      {% endif %}
+
+      {% if prijava.oprema_id %}
+        <h3>Stanje opreme</h3>
+        <p>Zaključek prijave ne spremeni stanja opreme samodejno.</p>
+        <form method="post" action="{{ url_for('oprema.spremeni_stanje', id_opreme=prijava.oprema_id) }}">
+          {{ prazen.hidden_tag() }}
+          <input type="hidden" name="naprej" value="{{ request.path }}">
+          {% if prijava.oprema_stanje == "uporabna" %}
+            <input type="hidden" name="stanje" value="nedelujoca">
+            <button class="gumb gumb-nevarno" type="submit">Označi opremo kot nedelujočo</button>
+          {% else %}
+            <input type="hidden" name="stanje" value="uporabna">
+            <button class="gumb gumb-drugotni" type="submit">Označi opremo kot uporabno</button>
+          {% endif %}
+        </form>
+      {% endif %}
+    </section>
+    {% endif %}
+  </div>
+
+  <section class="kartica" id="komentarji">
+    <h2>Komentarji</h2>
+    {% if komentarji %}
+      <ol class="komentarji">
+        {% for c in komentarji %}
+          <li>
+            <div class="komentar-glava"><strong>{{ c.ime }} {{ c.priimek }}</strong> · {{ c.ustvarjen_ob | cas }}</div>
+            <p class="besedilo">{{ c.besedilo }}</p>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="prazno">Ni komentarjev.</p>
+    {% endif %}
+
+    {% if lahko_komentira %}
+      <form method="post" action="{{ url_for('prijave.komentar', id_prijave=prijava.id) }}" novalidate>
+        {{ komentar.hidden_tag() }}
+        {{ m.polje(komentar.besedilo, rows=3) }}
+        {{ komentar.potrdi(class="gumb gumb-drugotni") }}
+      </form>
+    {% elif prijava.status == "resena" %}
+      <p class="namig">Prijava je rešena, zato novih komentarjev ni mogoče dodajati.</p>
+    {% endif %}
+  </section>
+{% endblock %}

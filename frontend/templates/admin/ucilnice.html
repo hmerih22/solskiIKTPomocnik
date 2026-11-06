@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block naslov %}Učilnice{% endblock %}
+{% block vsebina %}
+  <div class="naslovna-vrstica">
+    <h1>Učilnice in prostori</h1>
+    <a class="gumb" href="{{ url_for('admin.uredi_ucilnico') }}">Nova učilnica</a>
+  </div>
+  {% if ucilnice %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead><tr><th>Oznaka</th><th>Naziv</th><th>Opis</th><th></th></tr></thead>
+    <tbody>
+      {% for u in ucilnice %}
+      <tr>
+        <td>{{ u.oznaka }}</td>
+        <td>{{ u.naziv }}</td>
+        <td>{{ u.opis or "" }}</td>
+        <td><a class="gumb gumb-majhen gumb-drugotni" href="{{ url_for('admin.uredi_ucilnico', id_ucilnice=u.id) }}">Uredi</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Ni evidentiranih učilnic.</p>
+  {% endif %}
+{% endblock %}

@@ -35,4 +35,13 @@ def nalozi_nastavitve():
         "DB_NAME": os.environ["DB_NAME"],
         "DB_USER": os.environ["DB_USER"],
         "DB_PASSWORD": os.environ["DB_PASSWORD"],
+        # Neobvezne nastavitve (nadgradnje). Brez MAIL_SERVER se obvestila
+        # samo zabeležijo v bazo in ne pošiljajo.
+        "APP_URL": os.environ.get("APP_URL", "http://127.0.0.1:5000"),
+        "MAIL_SERVER": os.environ.get("MAIL_SERVER", ""),
+        "MAIL_PORT": int(os.environ.get("MAIL_PORT") or 587),
+        "MAIL_USE_TLS": os.environ.get("MAIL_USE_TLS", "1") == "1",
+        "MAIL_USERNAME": os.environ.get("MAIL_USERNAME", ""),
+        "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD", ""),
+        "MAIL_SENDER": os.environ.get("MAIL_SENDER", "ikt-pomocnik@sola.si"),
     }

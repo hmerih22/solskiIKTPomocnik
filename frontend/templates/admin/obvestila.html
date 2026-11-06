@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block naslov %}Obvestila{% endblock %}
+{% block vsebina %}
+  <h1>Evidenca e-poštnih obvestil</h1>
+  <p class="namig">Zadnjih 100 obvestil. Če v .env ni nastavljen MAIL_SERVER, se obvestila samo zabeležijo in ne pošljejo.</p>
+  {% if obvestila %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead><tr><th>Čas</th><th>Prejemnik</th><th>Zadeva</th><th>Stanje</th></tr></thead>
+    <tbody>
+      {% for o in obvestila %}
+      <tr>
+        <td>{{ o.ustvarjeno_ob | cas }}</td>
+        <td>{{ o.prejemnik }}</td>
+        <td>
+          <details><summary>{{ o.zadeva }}</summary><pre class="besedilo">{{ o.besedilo }}</pre></details>
+        </td>
+        <td>
+          {% if o.status == "poslano" %}<span class="znacka znacka-ok">Poslano</span>
+          {% elif o.status == "samo_zabelezeno" %}<span class="znacka znacka-siva">Samo zabeleženo</span>
+          {% else %}<span class="znacka znacka-slabo">Napaka</span><br><small>{{ o.napaka }}</small>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Ni obvestil.</p>
+  {% endif %}
+{% endblock %}

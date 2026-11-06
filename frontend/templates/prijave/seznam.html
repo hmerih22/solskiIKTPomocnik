@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}{{ naslov }}{% endblock %}
+{% block vsebina %}
+  <div class="naslovna-vrstica">
+    <h1>{{ naslov }}</h1>
+    <a class="gumb" href="{{ url_for('prijave.nova') }}">Prijavi težavo</a>
+  </div>
+
+  {% if vse %}
+    <nav class="filtri" aria-label="Filter po stanju">
+      <a href="{{ url_for('prijave.vse') }}" {% if not filter_status %}class="izbran"{% endif %}>Vse</a>
+      {% for kljuc, naziv in statusi.items() %}
+        <a href="{{ url_for('prijave.vse', status=kljuc) }}" {% if filter_status == kljuc %}class="izbran"{% endif %}>{{ naziv }}</a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% if prijave %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>#</th><th>Naslov</th>
+        {% if vse %}<th>Prijavitelj</th>{% endif %}
+        <th>Oprema / učilnica</th><th>Oddana</th><th>Stanje</th><th>Odgovorni skrbnik</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in prijave %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td><a href="{{ url_for('prijave.podrobnosti', id_prijave=p.id) }}">{{ p.naslov }}</a></td>
+        {% if vse %}<td>{{ p.prijavitelj_ime }} {{ p.prijavitelj_priimek }}</td>{% endif %}
+        <td>
+          {% if p.oprema_naziv %}{{ p.oprema_naziv }}{% endif %}
+          {% if p.oprema_naziv and p.ucilnica_oznaka %}<br>{% endif %}
+          {% if p.ucilnica_oznaka %}<small>Učilnica {{ p.ucilnica_oznaka }}</small>{% endif %}
+        </td>
+        <td>{{ p.ustvarjena_ob | cas }}</td>
+        <td>{{ m.status_prijave(p.status) }}</td>
+        <td>{% if p.skrbnik_ime %}{{ p.skrbnik_ime }} {{ p.skrbnik_priimek }}{% else %}<small>še ni določen</small>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Ni prijav.</p>
+  {% endif %}
+{% endblock %}

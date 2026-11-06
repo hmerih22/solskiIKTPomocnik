@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}{% if oprema %}Urejanje opreme{% else %}Nova oprema{% endif %}{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('oprema.seznam') }}">← Oprema</a></p>
+  <section class="kartica srednja">
+    <h1>{% if oprema %}{{ oprema.naziv }}{% else %}Nova oprema{% endif %}</h1>
+    <form method="post" novalidate>
+      {{ obrazec.hidden_tag() }}
+      {{ m.polje(obrazec.naziv, placeholder="npr. Projektor 1") }}
+      <div class="vrstica-polj">
+        {{ m.polje(obrazec.inventarna_stevilka) }}
+        {{ m.polje(obrazec.vrsta, placeholder="npr. projektor, prenosnik") }}
+      </div>
+      <div class="vrstica-polj">
+        {{ m.polje(obrazec.ucilnica_id) }}
+        {{ m.polje(obrazec.stanje) }}
+      </div>
+      {{ m.polje(obrazec.opis, rows=3) }}
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+  </section>
+{% endblock %}

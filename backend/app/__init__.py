@@ -8,15 +8,24 @@ Zažene se iz korenske mape projekta z ukazom:
 
 from pathlib import Path
 
-from flask import Flask, render_template
+from flask import Flask, redirect, render_template, url_for
+from flask_login import current_user, login_required
+from flask_wtf.csrf import CSRFProtect
 
+from . import admin, auth, cli, db, oprema, prijave, rezervacije, statistika
+from .cas import oblikuj, zdaj_utc
 from .config import nalozi_nastavitve
+from .napake import Prepovedano
+from .repositories import prijave as repo_prijave
+from .repositories import rezervacije as repo_rezervacije
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
 # zato Flasku povemo, kje jih najde.
 KORENSKA_MAPA = Path(__file__).resolve().parents[2]
 MAPA_PREDLOG = KORENSKA_MAPA / "frontend" / "templates"
 MAPA_STATICNIH = KORENSKA_MAPA / "frontend" / "static"
+
+csrf = CSRFProtect()
 
 
 def create_app(test_config=None):
@@ -29,15 +38,93 @@ def create_app(test_config=None):
         __name__,
         template_folder=str(MAPA_PREDLOG),
         static_folder=str(MAPA_STATICNIH),
+        instance_path=str(KORENSKA_MAPA / "instance"),
     )
 
+    # Privzete vrednosti; nastavitve iz .env ali testov jih lahko povozijo.
+    app.config.update(
+        # Priponke so shranjene zunaj mape static/, zato niso javno dostopne.
+        PRIPONKE_MAPA=str(Path(app.instance_path) / "priponke"),
+        # Največja velikost zahteve: 3 priponke po 5 MiB + ostali podatki.
+        MAX_CONTENT_LENGTH=16 * 1024 * 1024,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+    )
     if test_config is None:
         app.config.update(nalozi_nastavitve())
     else:
         app.config.update(test_config)
 
+    db.init_app(app)
+    csrf.init_app(app)
+    auth.login_manager.init_app(app)
+    cli.init_app(app)
+
+    for modul in (auth, oprema, rezervacije, prijave, admin, statistika):
+        app.register_blueprint(modul.bp)
+
+    _registriraj_predloge(app)
+    _registriraj_napake(app)
+
     @app.get("/")
+    @login_required
     def domov():
-        return render_template("index.html")
+        """Nadzorna plošča s povzetkom za prijavljenega uporabnika."""
+        zdaj = zdaj_utc()
+        with db.transakcija() as k:
+            moje_rez = [r for r in repo_rezervacije.za_uporabnika(k, current_user.id)
+                        if r["status"] == "aktivna" and r["konec"] > zdaj]
+            moje_prijave = [p for p in repo_prijave.za_prijavitelja(k, current_user.id)
+                            if p["status"] != "resena"]
+            nove_prijave = repo_prijave.vse(k, "nova") if current_user.je_skrbnik else []
+        moje_rez.sort(key=lambda r: r["zacetek"])
+        return render_template("index.html", rezervacije=moje_rez[:5],
+                               prijave=moje_prijave[:5], nove_prijave=nove_prijave[:5])
+
+    @app.get("/zdravje")
+    def zdravje():
+        return {"stanje": "ok"}
 
     return app
+
+
+def _registriraj_predloge(app):
+    """Filtri in spremenljivke, ki so na voljo v vseh Jinja predlogah."""
+    app.add_template_filter(oblikuj, "cas")
+
+    @app.context_processor
+    def skupne_spremenljivke():
+        return {
+            "nazivi_vlog": auth.NAZIVI_VLOG,
+            "statusi_prijav": prijave.STATUSI,
+        }
+
+
+def _registriraj_napake(app):
+    @app.errorhandler(Prepovedano)
+    def prepovedano(_napaka):
+        return render_template("napaka.html", koda=403,
+                               sporocilo="Za to dejanje nimaš pravic."), 403
+
+    @app.errorhandler(400)
+    def slaba_zahteva(_napaka):
+        return render_template("napaka.html", koda=400,
+                               sporocilo="Zahteva ni veljavna. Osveži stran in poskusi znova."), 400
+
+    @app.errorhandler(403)
+    def prepovedano_403(_napaka):
+        return render_template("napaka.html", koda=403,
+                               sporocilo="Za to stran nimaš pravic."), 403
+
+    @app.errorhandler(404)
+    def ni_najdeno(_napaka):
+        return render_template("napaka.html", koda=404, sporocilo="Strani ni mogoče najti."), 404
+
+    @app.errorhandler(413)
+    def prevelika(_napaka):
+        return render_template("napaka.html", koda=413,
+                               sporocilo="Poslane datoteke so prevelike (skupaj največ 16 MiB)."), 413
+
+    @app.route("/favicon.ico")
+    def favicon():
+        return redirect(url_for("static", filename="favicon.svg"))

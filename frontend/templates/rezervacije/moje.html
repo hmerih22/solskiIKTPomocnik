@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Moje rezervacije{% endblock %}
+{% block vsebina %}
+  <h1>Moje rezervacije</h1>
+  {% if rezervacije %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead><tr><th>Oprema</th><th>Termin</th><th>Status</th><th>Dejanja</th></tr></thead>
+    <tbody>
+      {% for r in rezervacije %}
+      <tr>
+        <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small>
+          {% if r.status == "aktivna" and r.konec > zdaj and r.oprema_stanje == "nedelujoca" %}
+            <div class="opozorilo-vrstica">⚠ Oprema je označena kot nedelujoča.</div>
+          {% endif %}
+        </td>
+        <td>{{ r.zacetek | cas }} –<br>{{ r.konec | cas }}</td>
+        <td>
+          {{ m.status_rezervacije(r, zdaj) }}
+          {% if r.status == "preklicana" %}
+            <br><small>Preklical: {{ r.preklical_ime }} {{ r.preklical_priimek }}, {{ r.preklicana_ob | cas }}</small>
+            {% if r.razlog_preklica %}<br><small>Razlog: {{ r.razlog_preklica }}</small>{% endif %}
+          {% endif %}
+        </td>
+        <td class="dejanja">
+          {% if lahko_preklice(current_user, r) %}
+            <form method="post" action="{{ url_for('rezervacije.preklic', id_rezervacije=r.id) }}"
+                  onsubmit="return confirm('Res želiš preklicati to rezervacijo?');">
+              {{ obrazec.hidden_tag() }}
+              <button class="gumb gumb-majhen gumb-nevarno" type="submit">Prekliči</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Nimaš rezervacij. <a href="{{ url_for('oprema.seznam') }}">Rezerviraj opremo</a>.</p>
+  {% endif %}
+{% endblock %}

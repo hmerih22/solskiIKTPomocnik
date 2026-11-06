@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Izposojena oprema{% endblock %}
+{% block vsebina %}
+  <h1>Izposojena oprema</h1>
+  <p class="namig">Oprema, ki je bila prevzeta in še ni vrnjena. Prevzem zabeležiš na strani
+    <a href="{{ url_for('rezervacije.vse') }}">Vse rezervacije</a>.</p>
+  {% if izposojene %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead><tr><th>Oprema</th><th>Uporabnik</th><th>Prevzeto</th><th>Rok vračila</th><th></th></tr></thead>
+    <tbody>
+      {% for r in izposojene %}
+      <tr {% if r.konec <= zdaj %}class="vrstica-zamuda"{% endif %}>
+        <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small></td>
+        <td>{{ r.uporabnik_ime }} {{ r.uporabnik_priimek }}</td>
+        <td>{{ r.prevzeta_ob | cas }}</td>
+        <td>{{ r.konec | cas }}
+          {% if r.konec <= zdaj %}<span class="znacka znacka-slabo">Zamuda pri vračilu</span>{% endif %}</td>
+        <td>{{ m.gumb_post(url_for('rezervacije.vracilo', id_rezervacije=r.id), "Zabeleži vračilo", "gumb gumb-majhen", request.full_path) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Trenutno ni izposojene opreme.</p>
+  {% endif %}
+{% endblock %}

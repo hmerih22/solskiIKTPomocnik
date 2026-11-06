@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Statistika{% endblock %}
+{% block vsebina %}
+  <h1>Statistika uporabe in težav</h1>
+
+  <form method="get" class="kartica filter-obdobja" novalidate>
+    <div class="vrstica-polj">
+      {{ m.polje(obrazec.od) }}
+      {{ m.polje(obrazec.do) }}
+      <div class="polje polje-gumb">{{ obrazec.potrdi(class="gumb") }}</div>
+    </div>
+  </form>
+
+  {% if podatki %}
+    <div class="mreza">
+      <div class="kartica stevec"><span class="stevilka">{{ podatki.stevilo_rezervacij }}</span> rezervacij</div>
+      <div class="kartica stevec"><span class="stevilka">{{ podatki.stevilo_prijav }}</span> prijav težav</div>
+      <div class="kartica stevec"><span class="stevilka">{{ podatki.povprecni_cas }}</span> povprečni čas reševanja</div>
+    </div>
+
+    <div class="mreza mreza-2">
+      <section class="kartica">
+        <h2>Rezervacije po opremi</h2>
+        {{ tabela(podatki.rezervacije_po_opremi, "Oprema") }}
+      </section>
+      <section class="kartica">
+        <h2>Prijave po opremi</h2>
+        {{ tabela(podatki.prijave_po_opremi, "Oprema") }}
+        <h2>Prijave po učilnicah</h2>
+        {{ tabela(podatki.prijave_po_ucilnicah, "Učilnica") }}
+      </section>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% macro tabela(vrstice, stolpec) %}
+  {% if vrstice %}
+    <table class="tabela">
+      <thead><tr><th>{{ stolpec }}</th><th class="desno">Število</th></tr></thead>
+      <tbody>
+        {% for v in vrstice %}
+          <tr>
+            <td>{% if v.oznaka %}{{ v.oznaka }} – {{ v.naziv }}{% else %}{{ v.naziv }} <small>({{ v.inventarna_stevilka }})</small>{% endif %}</td>
+            <td class="desno">{{ v.stevilo }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="prazno">Ni podatkov za izbrano obdobje.</p>
+  {% endif %}
+{% endmacro %}

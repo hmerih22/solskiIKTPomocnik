@@ -29,3 +29,4 @@ GRANT ALL PRIVILEGES ON solski_ikt_test.* TO 'solski_ikt_app'@'localhost';
 -- Shema v glavni bazi.
 USE solski_ikt;
 source backend/sql/001-schema.sql
+source backend/sql/002-nadgradnje.sql

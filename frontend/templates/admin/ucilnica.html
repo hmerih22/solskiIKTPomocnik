@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}{% if ucilnica %}Urejanje učilnice{% else %}Nova učilnica{% endif %}{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('admin.ucilnice') }}">← Učilnice</a></p>
+  <section class="kartica srednja">
+    <h1>{% if ucilnica %}Učilnica {{ ucilnica.oznaka }}{% else %}Nova učilnica{% endif %}</h1>
+    <form method="post" novalidate>
+      {{ obrazec.hidden_tag() }}
+      {{ m.polje(obrazec.oznaka, placeholder="npr. 12 ali KAB-IKT") }}
+      {{ m.polje(obrazec.naziv, placeholder="npr. Računalniška učilnica") }}
+      {{ m.polje(obrazec.opis, rows=3) }}
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+  </section>
+{% endblock %}

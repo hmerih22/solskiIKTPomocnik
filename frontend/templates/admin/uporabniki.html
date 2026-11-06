@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block naslov %}Uporabniki{% endblock %}
+{% block vsebina %}
+  <div class="naslovna-vrstica">
+    <h1>Uporabniki</h1>
+    <a class="gumb" href="{{ url_for('admin.nov_uporabnik') }}">Nov uporabnik</a>
+  </div>
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead><tr><th>Ime in priimek</th><th>E-pošta</th><th>Vloga</th><th>Stanje računa</th><th></th></tr></thead>
+    <tbody>
+      {% for u in uporabniki %}
+      <tr {% if not u.aktiven %}class="vrstica-neaktivna"{% endif %}>
+        <td>{{ u.ime }} {{ u.priimek }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ vloge[u.vloga] }}</td>
+        <td>{% if u.aktiven %}<span class="znacka znacka-ok">Aktiven</span>{% else %}<span class="znacka znacka-siva">Deaktiviran</span>{% endif %}</td>
+        <td><a class="gumb gumb-majhen gumb-drugotni" href="{{ url_for('admin.uredi_uporabnika', id_uporabnika=u.id) }}">Uredi</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}

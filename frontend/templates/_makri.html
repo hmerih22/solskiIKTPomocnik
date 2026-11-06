@@ -1,0 +1,48 @@
+{# Ponovno uporabni deli predlog. Uvoz: {% import "_makri.html" as m with context %} #}
+
+{% macro polje(field) %}{# dodatni atributi (npr. rows=3) so v kwargs #}
+  <div class="polje {% if field.errors %}polje-napaka{% endif %}">
+    {% if field.type == "BooleanField" %}
+      <label class="potrditveno">{{ field(**kwargs) }} {{ field.label.text }}</label>
+    {% else %}
+      {{ field.label }}
+      {{ field(**kwargs) }}
+    {% endif %}
+    {% for napaka in field.errors %}
+      <p class="napaka-polja">{{ napaka }}</p>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro stanje_opreme(stanje) %}
+  {% if stanje == "uporabna" %}
+    <span class="znacka znacka-ok">Uporabna</span>
+  {% else %}
+    <span class="znacka znacka-slabo">Nedelujoča</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro status_prijave(status) %}
+  <span class="znacka znacka-{{ status }}">{{ statusi_prijav[status] }}</span>
+{% endmacro %}
+
+{# Status rezervacije se izračuna iz statusa in časa (ni ločenega polja). #}
+{% macro status_rezervacije(r, zdaj) %}
+  {% if r.status == "preklicana" %}
+    <span class="znacka znacka-siva">Preklicana</span>
+  {% elif r.konec <= zdaj %}
+    <span class="znacka znacka-siva">Pretekla</span>
+  {% elif r.zacetek <= zdaj %}
+    <span class="znacka znacka-v_obravnavi">Poteka</span>
+  {% else %}
+    <span class="znacka znacka-ok">Prihodnja</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro gumb_post(akcija, besedilo, razred="gumb", naprej=None) %}
+  <form method="post" action="{{ akcija }}" class="v-vrstici">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if naprej %}<input type="hidden" name="naprej" value="{{ naprej }}">{% endif %}
+    <button class="{{ razred }}" type="submit">{{ besedilo }}</button>
+  </form>
+{% endmacro %}

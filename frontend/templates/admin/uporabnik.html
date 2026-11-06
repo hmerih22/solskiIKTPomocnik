@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}{% if nov %}Nov uporabnik{% else %}Urejanje uporabnika{% endif %}{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('admin.uporabniki') }}">← Uporabniki</a></p>
+  <section class="kartica srednja">
+    <h1>{% if nov %}Nov uporabnik{% else %}{{ uporabnik.ime }} {{ uporabnik.priimek }}{% endif %}</h1>
+    <form method="post" novalidate
+          {% if not nov %}onsubmit="return document.getElementById('aktiven').checked || confirm('Res želiš deaktivirati ta račun?');"{% endif %}>
+      {{ obrazec.hidden_tag() }}
+      <div class="vrstica-polj">
+        {{ m.polje(obrazec.ime) }}
+        {{ m.polje(obrazec.priimek) }}
+      </div>
+      {{ m.polje(obrazec.email) }}
+      {{ m.polje(obrazec.vloga) }}
+      {{ m.polje(obrazec.geslo, autocomplete="new-password") }}
+      <p class="namig">
+        {% if nov %}Začetno geslo (vsaj 8 znakov) posreduj uporabniku.
+        {% else %}Pusti prazno, če gesla ne želiš spremeniti.{% endif %}
+      </p>
+      {% if not nov %}{{ m.polje(obrazec.aktiven) }}{% endif %}
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+  </section>
+{% endblock %}

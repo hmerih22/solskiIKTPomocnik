@@ -1,13 +1,58 @@
-<!doctype html>
-<html lang="sl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Šolski IKT pomočnik</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <h1>Šolski IKT pomočnik</h1>
-  <p>Aplikacija deluje. Prijava in ostale strani bodo dodane v naslednjih korakih.</p>
-</body>
-</html>
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Začetna stran{% endblock %}
+{% block vsebina %}
+  <h1>Pozdravljen, {{ current_user.ime }}</h1>
+
+  <div class="mreza">
+    <section class="kartica">
+      <h2>Moje prihajajoče rezervacije</h2>
+      {% if rezervacije %}
+        <ul class="seznam">
+          {% for r in rezervacije %}
+            <li>
+              <strong>{{ r.oprema_naziv }}</strong><br>
+              {{ r.zacetek | cas }} – {{ r.konec | cas("%H:%M") }}
+              {% if r.oprema_stanje == "nedelujoca" %}<span class="znacka znacka-slabo">Oprema ne deluje</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="prazno">Nimaš prihajajočih rezervacij.</p>
+      {% endif %}
+      <p><a class="gumb" href="{{ url_for('oprema.seznam') }}">Rezerviraj opremo</a></p>
+    </section>
+
+    <section class="kartica">
+      <h2>Moje odprte prijave</h2>
+      {% if prijave %}
+        <ul class="seznam">
+          {% for p in prijave %}
+            <li><a href="{{ url_for('prijave.podrobnosti', id_prijave=p.id) }}">{{ p.naslov }}</a>
+              {{ m.status_prijave(p.status) }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="prazno">Nimaš odprtih prijav.</p>
+      {% endif %}
+      <p><a class="gumb" href="{{ url_for('prijave.nova') }}">Prijavi težavo</a></p>
+    </section>
+
+    {% if current_user.je_skrbnik %}
+    <section class="kartica">
+      <h2>Nove prijave za prevzem</h2>
+      {% if nove_prijave %}
+        <ul class="seznam">
+          {% for p in nove_prijave %}
+            <li><a href="{{ url_for('prijave.podrobnosti', id_prijave=p.id) }}">{{ p.naslov }}</a>
+              <small>({{ p.prijavitelj_ime }} {{ p.prijavitelj_priimek }}, {{ p.ustvarjena_ob | cas }})</small></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="prazno">Ni novih prijav.</p>
+      {% endif %}
+      <p><a class="gumb gumb-drugotni" href="{{ url_for('prijave.vse') }}">Vse prijave</a></p>
+    </section>
+    {% endif %}
+  </div>
+{% endblock %}
