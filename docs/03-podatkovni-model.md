@@ -178,7 +178,7 @@ erDiagram
 - Obvezna besedilna polja ne smejo biti prazna ali vsebovati samo presledkov; to preveri zaledje.
 - Tuji ključi morajo kazati na obstoječe zapise. Fizično brisanje povezanih uporabnikov, učilnic ali opreme se prepreči; v MVP administrator evidence dodaja in ureja, račune pa deaktivira.
 - Rezervacije in prijave se ne brišejo ob preklicu ali zaključku, temveč se spremeni njihov status.
-- Osnovne omejitve, kot so `zacetek < konec` in zahteva po opremi ali učilnici pri prijavi, se izrazijo tudi z omejitvami CHECK v shemi. Pravila glede uporabniških pravic in trenutnega časa preverja Flask.
+- Osnovne omejitve, kot so `zacetek < konec` in zahteva po opremi ali učilnici pri prijavi, se izrazijo tudi z omejitvami CHECK v shemi. Tuji ključi zato uporabljajo privzeto pravilo `RESTRICT`, saj MySQL ne dovoli omejitev CHECK na stolpcih s tujimi ključi, ki imajo `ON DELETE`/`ON UPDATE` `CASCADE` ali `SET NULL`. Pravila glede uporabniških pravic in trenutnega časa preverja Flask.
 - Datumi in časi se v poljih DATETIME hranijo po dogovorjeni konvenciji UTC. Zaledje pretvarja uporabniški vnos in prikaz glede na časovni pas Europe/Ljubljana; DATETIME sam ne hrani podatka o časovnem pasu.
 
 ### Preprečevanje prekrivanja rezervacij

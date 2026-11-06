@@ -23,7 +23,7 @@ Zaslon omogoča IKT skrbniku obravnavo prijavljene tehnične težave. Prikazani 
 
 ![Wireframe 4 – Vse rezervacije](wireframes/WF-04-vse-rezervacije.png)
 
-IKT-skrbnik vidi rezervacije, uporabnike, termine ter stanje rezervirane opreme. Če oprema ne deluje, lahko prekliče rezervacijo, vnese obvezen razlog in o preklicu obvesti lastnika rezervacije. Preklicana rezervacija ostane zabeležena v evidenci.
+IKT-skrbnik vidi rezervacije, uporabnike, termine ter stanje rezervirane opreme. Če oprema ne deluje, lahko prekliče rezervacijo, vnese obvezen razlog, ki ga lastnik rezervacije vidi v svojem pregledu rezervacij. Obveščanje po e-pošti ni del MVP (nadgradnja F11). Preklicana rezervacija ostane zabeležena v evidenci.
 
 ## 5. Urejanje uporabnikov
 

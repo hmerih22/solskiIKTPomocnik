@@ -26,4 +26,4 @@ Izbrana možnost: »Brez javne registracije«, ker je krog uporabnikov majhen in
 * Dobro, ker je MVP preprostejši (brez potrjevanja e-pošte in čakalne vrste odobritev).
 * Slabo, ker mora administrator ročno ustvariti vsak račun in posredovati začetno geslo.
 * Slabo, ker samodejna ponastavitev gesla po e-pošti ni del MVP; pozabljeno geslo ponastavi administrator.
-* Slabo, ker je potreben ločen lokalni ukaz (`flask --app app create-admin`) za prvega administratorja.
+* Slabo, ker je potreben ločen lokalni ukaz (`flask --app backend/app create-admin`) za prvega administratorja.

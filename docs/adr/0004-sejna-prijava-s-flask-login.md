@@ -18,7 +18,7 @@ Aplikacijo uporabljajo zaposleni prek brskalnika. Zaledje mora pri vsaki zahtevi
 
 ## Izid odločitve
 
-Izbrana možnost: »Sejna prijava s Flask-Login«, ker se aplikacija uporablja samo prek brskalnika s strežniško sestavljenimi stranmi ([ADR-0003](0003-strezniski-html-z-jinja-predlogami.md)). Sejni piškotek je zato naraven in preprost mehanizem. JWT je smiseln pri API in ločenih odjemalcih, ki jih nimamo, poleg tega otežuje takojšen preklic dostopa. Prijava prek zunanjega ponudnika bi zahtevala registracijo aplikacije in sodelovanje šolskega skrbnika identitet, zato jo puščamo za kasnejšo nadgradnjo. Lastna implementacija sej bi po nepotrebnem povečala varnostno tveganje. V seji hranimo samo identifikator uporabnika, uporabnika pa ob vsaki zahtevi ponovno naložimo iz baze.
+Izbrana možnost: »Sejna prijava s Flask-Login«, ker se aplikacija uporablja samo prek brskalnika s strežniško sestavljenimi stranmi ([ADR-0003](0003-izbira-frontenda.md)). Sejni piškotek je zato naraven in preprost mehanizem. JWT je smiseln pri API in ločenih odjemalcih, ki jih nimamo, poleg tega otežuje takojšen preklic dostopa. Prijava prek zunanjega ponudnika bi zahtevala registracijo aplikacije in sodelovanje šolskega skrbnika identitet, zato jo puščamo za kasnejšo nadgradnjo. Lastna implementacija sej bi po nepotrebnem povečala varnostno tveganje. V seji hranimo samo identifikator uporabnika, uporabnika pa ob vsaki zahtevi ponovno naložimo iz baze.
 
 ### Posledice
 

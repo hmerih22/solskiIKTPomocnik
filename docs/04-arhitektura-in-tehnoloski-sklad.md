@@ -113,26 +113,51 @@ Točne različice Python knjižnic bodo ob začetku implementacije izbrane glede
 
 ## Predvidena organizacija projekta
 
+Repozitorij je razdeljen na mapi `backend/` (Flask aplikacija, SQL in testi) ter `frontend/` (Jinja predloge in statične datoteke).
+
+```
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── auth.py, oprema.py, rezervacije.py, prijave.py, admin.py
+│   │   ├── db.py
+│   │   ├── services/
+│   │   └── repositories/
+│   ├── sql/
+│   │   └── 001-schema.sql
+│   └── tests/
+├── frontend/
+│   ├── templates/
+│   └── static/
+├── docs/
+├── requirements.txt
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
 | Pot | Vsebina |
 | --- | --- |
-| `app/__init__.py` | Funkcija `create_app`, nalaganje nastavitev in registracija modulov |
-| `app/auth.py` | Prijava, odjava in nalaganje uporabnika |
-| `app/oprema.py` | Pregled opreme in razpoložljivosti |
-| `app/rezervacije.py` | Obrazci in poti za rezervacije ter preklice |
-| `app/prijave.py` | Oddaja, pregled, prevzem in zaključek prijav |
-| `app/admin.py` | Upravljanje uporabnikov, učilnic in opreme |
-| `app/services/` | Poslovna pravila in transakcijski postopki |
-| `app/db.py` | Upravljanje povezave z MySQL |
-| `app/repositories/` | SQL-poizvedbe za posamezne entitete |
-| `app/templates/` | Jinja predloge strani |
-| `app/static/` | CSS in morebitni JavaScript |
-| `sql/001-schema.sql` | Začetna shema baze; nadaljnje spremembe se dodajajo kot oštevilčene skripte |
-| `tests/` | Testi pomembnih pravil in delovnih procesov |
+| `backend/app/__init__.py` | Funkcija `create_app`, nalaganje nastavitev, registracija modulov in nastavitev poti do map `frontend/templates` in `frontend/static` |
+| `backend/app/auth.py` | Prijava, odjava in nalaganje uporabnika |
+| `backend/app/oprema.py` | Pregled opreme in razpoložljivosti |
+| `backend/app/rezervacije.py` | Obrazci in poti za rezervacije ter preklice |
+| `backend/app/prijave.py` | Oddaja, pregled, prevzem in zaključek prijav |
+| `backend/app/admin.py` | Upravljanje uporabnikov, učilnic in opreme |
+| `backend/app/services/` | Poslovna pravila in transakcijski postopki |
+| `backend/app/db.py` | Upravljanje povezave z MySQL |
+| `backend/app/repositories/` | SQL-poizvedbe za posamezne entitete |
+| `backend/sql/001-schema.sql` | Začetna shema baze; nadaljnje spremembe se dodajajo kot oštevilčene skripte |
+| `backend/tests/` | Testi pomembnih pravil in delovnih procesov |
+| `frontend/templates/` | Jinja predloge strani |
+| `frontend/static/` | CSS in morebitni JavaScript |
 | `docs/` | Dokumentacija zasnove, wireframes in ADR |
 | `requirements.txt` | Knjižnice in njihove različice |
 | `.env.example` | Primer imen nastavitev brez dejanskih skrivnosti |
 | `.gitignore` | Izključitev lokalnih nastavitev, virtualnega okolja in drugih začasnih datotek |
 | `README.md` | Navodila za namestitev, pripravo baze, zagon in preverjanje |
+
+Ker predloge in statične datoteke niso v privzetih mapah znotraj paketa `app`, jih `create_app` nastavi s parametroma `template_folder` in `static_folder` ob ustvarjanju objekta `Flask`.
 
 To je načrt organizacije. Navedeni moduli, ukazi in SQL-skripte bodo nastali pri implementaciji.
 
@@ -143,20 +168,20 @@ To je načrt organizacije. Navedeni moduli, ukazi in SQL-skripte bodo nastali pr
 1. Prenese repozitorij in odpre terminal v njegovi korenski mapi.
 2. Ustvari in aktivira virtualno okolje Python.
 3. Namesti knjižnice iz `requirements.txt`.
-4. V MySQL ustvari bazo `solski_ikt`, izvede `sql/001-schema.sql` in pripravi račun za aplikacijo.
+4. V MySQL ustvari bazo `solski_ikt`, izvede `backend/sql/001-schema.sql` in pripravi račun za aplikacijo.
 5. Kopira `.env.example` v lokalno `.env` ter vnese svoje nastavitve.
-6. S predvidenim ukazom `flask --app app create-admin` ustvari prvega administratorja; ukaz podatke in geslo zahteva interaktivno.
+6. S predvidenim ukazom `flask --app backend/app create-admin` ustvari prvega administratorja; ukaz podatke in geslo zahteva interaktivno.
 7. Zažene razvojni strežnik in odpre aplikacijo v brskalniku.
 
 Primer namestitve in zagona v Windows PowerShell po dokončanju implementacije:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 # Pred naslednjim korakom pripravi bazo in datoteko .env.
-flask --app app create-admin
-flask --app app run --debug
+flask --app backend/app create-admin
+flask --app backend/app run --debug
 ```
 
 Aplikacija bo pri običajnem lokalnem zagonu dostopna na `http://127.0.0.1:5000`.

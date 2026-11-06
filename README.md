@@ -8,7 +8,7 @@ Učitelji preverijo razpoložljivost opreme, jo rezervirajo brez prekrivanja ter
 
 ## Uporabljene tehnologije
 
-| Področje | Tehnologija |
+| Področje | Tehnologije |
 | --- | --- |
 | Zaledje (backend) | Python, Flask |
 | Uporabniški vmesnik (frontend) | HTML, CSS, Jinja predloge (strežniško upodabljanje) |
@@ -38,24 +38,24 @@ Učitelji preverijo razpoložljivost opreme, jo rezervirajo brez prekrivanja ter
 ```
 ├── README.md
 ├── .gitignore
-├── frontend/      # uporabniški vmesnik (Jinja predloge, CSS) – v pripravi
-├── backend/       # Flask aplikacija – v pripravi
+├── frontend/      # templates/ (Jinja predloge), static/ (CSS) – v pripravi
+├── backend/       # app/ (Flask aplikacija), sql/ (shema baze), tests/ – v pripravi
 └── docs/          # dokumentacija, wireframes in ADR
 ```
 
 ## Način dela (GitHub Flow)
 
-Veja `main` je zaščitena. Vse spremembe nastanejo na ločeni veji (npr. `feature/razvoj`) in se v `main` združijo prek pull requesta.
+Veja `main` je zaščitena. Vse spremembe nastanejo na razvojni veji `razvoj` in se v `main` združijo prek pull requesta.
 
 ```bash
-git switch -c feature/ime-spremembe
+git switch razvoj
 # ... spremembe ...
 git add .
 git commit -m "Opis spremembe"
-git push -u origin feature/ime-spremembe
-# na GitHubu odpri pull request v main
+git push -u origin razvoj
+# na GitHubu odpri pull request iz razvoj v main
 ```
 
 ## Avtor
 
-Hušidić Merih
+Hušidić Merih FNM

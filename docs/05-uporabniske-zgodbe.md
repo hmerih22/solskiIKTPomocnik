@@ -28,11 +28,11 @@
 3. Preklicana rezervacija ne povzroči prikaza zasedenega termina.
 4. Pri nedelujoči opremi sistem prikaže, da je ni mogoče rezervirati, tudi če nima rezervacij.
 5. Pri začetku v preteklosti ali začetku, ki ni pred koncem, sistem prikaže napako pri terminu in ne prikaže potrditve razpoložljivosti.
+
 ## US-03: Ustvarjanje rezervacije
 
 - **Povezana funkcionalnost:** F03 – Rezervacija brez prekrivanja
 - **Uporabniška vloga:** Učitelj
-
 
 **Zgodba:** Kot učitelj želim rezervirati prosto opremo za določen termin, da bo njena načrtovana uporaba evidentirana in termin zaseden zame.
 
