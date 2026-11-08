@@ -11,3 +11,12 @@ def najdi(k, id_uporabnika):
 def najdi_po_emailu(k, email):
     k.execute(f"SELECT {STOLPCI} FROM uporabnik WHERE email = %s", (email,))
     return k.fetchone()
+
+
+def ustvari(k, ime, priimek, email, geslo_hash, vloga):
+    k.execute(
+        "INSERT INTO uporabnik (ime, priimek, email, geslo_hash, vloga)"
+        " VALUES (%s, %s, %s, %s, %s)",
+        (ime, priimek, email, geslo_hash, vloga),
+    )
+    return k.lastrowid
