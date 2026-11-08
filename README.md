@@ -1,0 +1,87 @@
+# Šolski IKT pomočnik
+
+Spletna aplikacija za **rezervacijo skupne šolske IKT-opreme** (prenosniki, projektorji, kompleti tablic) ter **prijavo in obravnavo tehničnih težav** znotraj ene šole.
+
+Trenutno so narejeni temelji aplikacije: prijava in odjava, vloge (učitelj, IKT skrbnik, administrator), osnovna predloga z menijem ter ustvarjanje uporabniških računov. Rezervacije opreme in prijave težav sledijo v naslednjih korakih.
+
+Uporabljene tehnologije: Python 3 s Flaskom, MySQL 8.4, Jinja predloge, Flask-Login in Flask-WTF.
+
+## Namestitev in zagon (Windows PowerShell)
+
+Vsi ukazi se izvedejo v korenski mapi projekta.
+
+### 1. Virtualno okolje in knjižnice
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+### 2. Nastavitve (.env)
+
+```powershell
+Copy-Item .env.example .env
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+V datoteko `.env` vpiši izpisano vrednost kot `SECRET_KEY` in izberi geslo za bazo (`DB_PASSWORD`). Datoteka `.env` se ne shrani v Git. Če katera obvezna nastavitev manjka, aplikacija ob zagonu izpiše, katera.
+
+### 3. Baza
+
+Kopiraj pripravljalno skripto in vanjo namesto `GESLO_APLIKACIJE` vpiši isto geslo kot `DB_PASSWORD` v `.env`:
+
+```powershell
+Copy-Item backend\sql\000-priprava.example.sql backend\sql\local-priprava.sql
+```
+
+Nato skripto izvedi kot uporabnik `root`:
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.4\bin\mysql.exe" -u root -p --default-character-set=utf8mb4 -e "source backend/sql/local-priprava.sql"
+```
+
+Skripta izbriše in na novo ustvari bazi `solski_ikt` (glavna) in `solski_ikt_test` (za teste), ustvari uporabnika `solski_ikt_app` in naloži shemo iz `backend/sql/001-schema.sql`. Datoteke `local-*.sql` so v `.gitignore`, ker vsebujejo geslo.
+
+### 4. Prvi administrator
+
+```powershell
+flask --app backend/app create-admin
+```
+
+Ukaz vpraša za ime, priimek, e-poštni naslov in geslo (vsaj 8 znakov). Javne registracije ni: nadaljnje račune ustvari administrator v aplikaciji (meni **Uporabniki**).
+
+### 5. Zagon
+
+```powershell
+flask --app backend/app run --debug
+```
+
+Aplikacija je dostopna na <http://127.0.0.1:5000>.
+
+## Testi
+
+```powershell
+python -m pytest
+```
+
+Testi z bazo uporabljajo ločeno bazo `solski_ikt_test` in jo pred vsakim testom izpraznijo, glavne baze ne spreminjajo. Če baza ni dosegljiva, se ti testi preskočijo (razlog izpiše `python -m pytest -rs`).
+
+## Zgradba kode
+
+| Pot | Vsebina |
+| --- | --- |
+| `backend/app/__init__.py` | `create_app`: nastavitve, registracija modulov, strani z napakami |
+| `backend/app/config.py` | Branje nastavitev iz `.env` |
+| `backend/app/db.py` | Povezava z bazo na zahtevo, pomočnik `transakcija()` |
+| `backend/app/auth.py` | Prijava, odjava, nalaganje uporabnika, dekorator `zahteva_vlogo` |
+| `backend/app/vloge.py` | Seznam vlog in njihovi nazivi |
+| `backend/app/admin.py` | Strani za administratorja (uporabniki) |
+| `backend/app/services/` | Poslovna pravila (npr. preverjanje podatkov novega računa) |
+| `backend/app/repositories/` | SQL-poizvedbe s parametri `%s` |
+| `backend/app/obrazci.py` | Obrazci Flask-WTF z zaščito CSRF |
+| `backend/app/cli.py` | Ukaz `create-admin` |
+| `backend/sql/` | Shema baze in pripravljalna skripta |
+| `backend/tests/` | Testi (pytest) |
+| `frontend/templates/`, `frontend/static/` | Jinja predloge in CSS |
+| `docs/` | Projektna dokumentacija |
