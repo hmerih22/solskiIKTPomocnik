@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Nov uporabnik{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('admin.uporabniki') }}">← Nazaj na seznam uporabnikov</a></p>
+  <section class="kartica ozka">
+    <h1>Nov uporabnik</h1>
+    <form method="post" novalidate>
+      {{ obrazec.hidden_tag() }}
+      {{ m.polje(obrazec.ime, autofocus=true) }}
+      {{ m.polje(obrazec.priimek) }}
+      {{ m.polje(obrazec.email) }}
+      {{ m.polje(obrazec.geslo, autocomplete="new-password") }}
+      {{ m.polje(obrazec.vloga) }}
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+    <p class="namig">Geslo se shrani samo kot zgoščena vrednost. Začetno geslo varno posreduj uporabniku.</p>
+  </section>
+{% endblock %}

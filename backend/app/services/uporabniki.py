@@ -4,7 +4,7 @@ from mysql.connector import errorcode
 from mysql.connector.errors import IntegrityError
 from werkzeug.security import generate_password_hash
 
-from ..auth import VLOGE
+from ..vloge import VLOGE
 from ..db import transakcija
 from ..napake import PoslovnaNapaka
 from ..repositories import uporabniki as repo_uporabniki

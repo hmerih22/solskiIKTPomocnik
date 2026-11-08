@@ -15,6 +15,7 @@ from .db import transakcija
 from .obrazci import ObrazecPrijava
 from .pomocniki import pot_nazaj
 from .repositories import uporabniki as repo_uporabniki
+from .vloge import NAZIVI_VLOG, VLOGE  # noqa: F401 (NAZIVI_VLOG uporabljajo predloge)
 
 bp = Blueprint("auth", __name__)
 login_manager = LoginManager()
@@ -22,13 +23,6 @@ login_manager.login_view = "auth.prijava"
 login_manager.login_message = "Za dostop do te strani se prijavi."
 login_manager.login_message_category = "opozorilo"
 
-# Vloge od najmanj do največ pravic. Višja vloga ima vse pravice nižjih.
-VLOGE = ["ucitelj", "ikt_skrbnik", "administrator"]
-NAZIVI_VLOG = {
-    "ucitelj": "Učitelj",
-    "ikt_skrbnik": "IKT skrbnik",
-    "administrator": "Administrator",
-}
 
 
 class Uporabnik(UserMixin):

@@ -20,3 +20,8 @@ def ustvari(k, ime, priimek, email, geslo_hash, vloga):
         (ime, priimek, email, geslo_hash, vloga),
     )
     return k.lastrowid
+
+
+def vsi(k):
+    k.execute(f"SELECT {STOLPCI} FROM uporabnik ORDER BY priimek, ime")
+    return k.fetchall()

@@ -12,7 +12,7 @@ from flask import Flask, redirect, render_template, url_for
 from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
-from . import auth, cli, db
+from . import admin, auth, cli, db
 from .config import nalozi_nastavitve
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
@@ -51,7 +51,8 @@ def create_app(test_config=None):
     csrf.init_app(app)
     auth.login_manager.init_app(app)
     cli.init_app(app)
-    app.register_blueprint(auth.bp)
+    for modul in (auth, admin):
+        app.register_blueprint(modul.bp)
 
     @app.get("/")
     @login_required
