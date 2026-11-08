@@ -17,11 +17,7 @@ def _napaka_email(email):
 
 
 def ustvari(ime, priimek, email, geslo, vloga):
-    """Ustvari račun in vrne njegov id. Geslo se shrani samo kot zgoščena vrednost.
-
-    Kliče jo ukaz create-admin ali administrator v aplikaciji. Pravice
-    preveri klicatelj (pot je zaščitena z zahteva_vlogo("administrator")).
-    """
+  
     ime = (ime or "").strip()
     priimek = (priimek or "").strip()
     email = (email or "").strip().lower()
