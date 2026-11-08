@@ -1,17 +1,15 @@
 {% extends "base.html" %}
+{% import "_makri.html" as m with context %}
 {% block naslov %}Prijava{% endblock %}
 {% block vsebina %}
-  <h1>Prijava</h1>
-  <form method="post" novalidate>
-    {{ obrazec.hidden_tag() }}
-    {% for polje in [obrazec.email, obrazec.geslo] %}
-      <div>
-        {{ polje.label }}
-        {{ polje(autocomplete="username" if polje.name == "email" else "current-password") }}
-        {% for napaka in polje.errors %}<p class="napaka-polja">{{ napaka }}</p>{% endfor %}
-      </div>
-    {% endfor %}
-    {{ obrazec.potrdi() }}
-  </form>
-  <p>Računa ni mogoče ustvariti sam. Če ga nimaš, se obrni na administratorja.</p>
+  <section class="kartica ozka">
+    <h1>Prijava</h1>
+    <form method="post" novalidate>
+      {{ obrazec.hidden_tag() }}
+      {{ m.polje(obrazec.email, autocomplete="username", autofocus=true) }}
+      {{ m.polje(obrazec.geslo, autocomplete="current-password") }}
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+    <p class="namig">Računa ni mogoče ustvariti sam. Če ga nimaš, se obrni na administratorja.</p>
+  </section>
 {% endblock %}

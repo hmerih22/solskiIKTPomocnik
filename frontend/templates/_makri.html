@@ -1,0 +1,15 @@
+{# Ponovno uporabni deli predlog. Uvoz: {% import "_makri.html" as m with context %} #}
+
+{% macro polje(field) %}{# dodatni atributi (npr. autofocus=true) so v kwargs #}
+  <div class="polje {% if field.errors %}polje-napaka{% endif %}">
+    {% if field.type == "BooleanField" %}
+      <label class="potrditveno">{{ field(**kwargs) }} {{ field.label.text }}</label>
+    {% else %}
+      {{ field.label }}
+      {{ field(**kwargs) }}
+    {% endif %}
+    {% for napaka in field.errors %}
+      <p class="napaka-polja">{{ napaka }}</p>
+    {% endfor %}
+  </div>
+{% endmacro %}

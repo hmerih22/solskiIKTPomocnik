@@ -8,8 +8,8 @@ Zažene se iz korenske mape projekta z ukazom:
 
 from pathlib import Path
 
-from flask import Flask
-from flask_login import current_user, login_required
+from flask import Flask, redirect, render_template, url_for
+from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
 from . import auth, db
@@ -55,10 +55,40 @@ def create_app(test_config=None):
     @app.get("/")
     @login_required
     def domov():
-        return f"Pozdravljen, {current_user.polno_ime}!"
+        return render_template("index.html")
 
     @app.get("/zdravje")
     def zdravje():
         return {"stanje": "ok"}
 
+    _registriraj_predloge(app)
+    _registriraj_napake(app)
     return app
+
+
+def _registriraj_predloge(app):
+    """Spremenljivke, ki so na voljo v vseh Jinja predlogah."""
+
+    @app.context_processor
+    def skupne_spremenljivke():
+        return {"nazivi_vlog": auth.NAZIVI_VLOG}
+
+
+def _registriraj_napake(app):
+    @app.errorhandler(400)
+    def slaba_zahteva(_napaka):
+        return render_template("napaka.html", koda=400,
+                               sporocilo="Zahteva ni veljavna. Osveži stran in poskusi znova."), 400
+
+    @app.errorhandler(403)
+    def prepovedano(_napaka):
+        return render_template("napaka.html", koda=403,
+                               sporocilo="Za to stran nimaš pravic."), 403
+
+    @app.errorhandler(404)
+    def ni_najdeno(_napaka):
+        return render_template("napaka.html", koda=404, sporocilo="Strani ni mogoče najti."), 404
+
+    @app.route("/favicon.ico")
+    def favicon():
+        return redirect(url_for("static", filename="favicon.svg"))

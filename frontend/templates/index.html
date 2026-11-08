@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block naslov %}Začetna stran{% endblock %}
+{% block vsebina %}
+  <h1>Pozdravljen, {{ current_user.ime }}</h1>
+  <section class="kartica">
+    <p>Prijavljen si kot <strong>{{ nazivi_vlog[current_user.vloga] }}</strong>.</p>
+    <p class="namig">Rezervacije opreme in prijave težav bodo dodane v naslednjih korakih.</p>
+  </section>
+{% endblock %}
