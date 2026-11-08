@@ -10,6 +10,7 @@ from pathlib import Path
 
 from flask import Flask
 
+from . import db
 from .config import nalozi_nastavitve
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
@@ -40,6 +41,8 @@ def create_app(test_config=None):
         app.config.update(nalozi_nastavitve())
     else:
         app.config.update(test_config)
+
+    db.init_app(app)
 
     @app.get("/")
     def domov():
