@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block naslov %}{% endblock %} – Šolski IKT pomočnik</title>
+</head>
+<body>
+  {% if current_user.is_authenticated %}
+    <p>{{ current_user.polno_ime }}
+      <form method="post" action="{{ url_for('auth.odjava') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Odjava</button>
+      </form>
+    </p>
+  {% endif %}
+  {% for kategorija, sporocilo in get_flashed_messages(with_categories=true) %}
+    <p class="sporocilo-{{ kategorija }}">{{ sporocilo }}</p>
+  {% endfor %}
+  {% block vsebina %}{% endblock %}
+</body>
+</html>

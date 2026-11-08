@@ -9,8 +9,10 @@ Zažene se iz korenske mape projekta z ukazom:
 from pathlib import Path
 
 from flask import Flask
+from flask_login import current_user, login_required
+from flask_wtf.csrf import CSRFProtect
 
-from . import db
+from . import auth, db
 from .config import nalozi_nastavitve
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
@@ -18,6 +20,9 @@ from .config import nalozi_nastavitve
 KORENSKA_MAPA = Path(__file__).resolve().parents[2]
 MAPA_PREDLOG = KORENSKA_MAPA / "frontend" / "templates"
 MAPA_STATICNIH = KORENSKA_MAPA / "frontend" / "static"
+
+# Zaščita CSRF za vse POST zahteve (tudi gumb za odjavo).
+csrf = CSRFProtect()
 
 
 def create_app(test_config=None):
@@ -43,10 +48,14 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     db.init_app(app)
+    csrf.init_app(app)
+    auth.login_manager.init_app(app)
+    app.register_blueprint(auth.bp)
 
     @app.get("/")
+    @login_required
     def domov():
-        return "Šolski IKT pomočnik deluje."
+        return f"Pozdravljen, {current_user.polno_ime}!"
 
     @app.get("/zdravje")
     def zdravje():
