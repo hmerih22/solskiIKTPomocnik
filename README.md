@@ -85,3 +85,23 @@ Testi z bazo uporabljajo ločeno bazo `solski_ikt_test` in jo pred vsakim testom
 | `backend/tests/` | Testi (pytest) |
 | `frontend/templates/`, `frontend/static/` | Jinja predloge in CSS |
 | `docs/` | Projektna dokumentacija |
+
+## Dokumentacija
+
+| Dokument | Vsebina |
+| --- | --- |
+| [01 – Zasnova rešitve](docs/01-zasnova-resitve.md) | Ideja, problem, ciljni uporabniki in primer uporabe |
+| [02 – Funkcionalnosti in obseg](docs/02-funkcionalnosti-in-obseg.md) | Vloge, funkcionalnosti, obseg MVP in nadgradnje |
+| [03 – Podatkovni model](docs/03-podatkovni-model.md) | Entitete, povezave, omejitve in indeksi |
+| [04 – Arhitektura in tehnološki sklad](docs/04-arhitektura-in-tehnoloski-sklad.md) | Zgradba sistema, tehnologije in lokalni zagon |
+| [05 – Uporabniške zgodbe](docs/05-uporabniske-zgodbe.md) | Uporabniške zgodbe s sprejemnimi kriteriji |
+| [06 – Wireframes](docs/06-wireframes.md) | Žični prikazi ključnih zaslonov |
+| [Arhitekturne odločitve (ADR)](docs/adr/) | Zapisi arhitekturnih odločitev po predlogi MADR |
+
+## Način dela (GitHub Flow)
+
+Vse spremembe nastanejo na ločeni veji (npr. `razvoj2`) in se v `main` združijo prek pull requesta.
+
+## Avtor
+
+Hušidić Merih
