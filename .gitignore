@@ -41,3 +41,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# --- Lokalne SQL skripte z gesli ---
+backend/sql/local-*.sql

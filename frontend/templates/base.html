@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block naslov %}{% endblock %} – Šolski IKT pomočnik</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="glava">
+    <a class="logotip" href="{{ url_for('domov') }}">Šolski IKT pomočnik</a>
+    {% if current_user.is_authenticated %}
+    <nav class="meni" aria-label="Glavni meni">
+      <a href="{{ url_for('domov') }}">Začetna stran</a>
+      {% if current_user.je_skrbnik %}
+        <span class="meni-locilo" aria-hidden="true"></span>
+        {# Povezave za IKT skrbnika se dodajo z naslednjimi uporabniškimi zgodbami. #}
+      {% endif %}
+      {% if current_user.je_administrator %}
+        <span class="meni-locilo" aria-hidden="true"></span>
+        <a href="{{ url_for('admin.uporabniki') }}">Uporabniki</a>
+      {% endif %}
+    </nav>
+    <div class="uporabnik">
+      <span>{{ current_user.polno_ime }} <small>({{ nazivi_vlog[current_user.vloga] }})</small></span>
+      <form method="post" action="{{ url_for('auth.odjava') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="gumb gumb-povezava" type="submit">Odjava</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+
+  <main class="vsebina">
+    {% with sporocila = get_flashed_messages(with_categories=true) %}
+      {% for kategorija, sporocilo in sporocila %}
+        <div class="sporocilo sporocilo-{{ kategorija }}" role="status">{{ sporocilo }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block vsebina %}{% endblock %}
+  </main>
+</body>
+</html>
