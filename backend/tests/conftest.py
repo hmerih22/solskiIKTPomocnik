@@ -121,3 +121,68 @@ def spremeni_uporabnika(id_uporabnika, **stolpci):
 
 def prijavi(odjemalec, email, geslo=GESLO):
     return odjemalec.post("/prijava", data={"email": email, "geslo": geslo})
+
+
+def ustvari_ucilnico(oznaka="12", naziv="Učilnica 12"):
+    with transakcija() as k:
+        k.execute("INSERT INTO ucilnica (oznaka, naziv) VALUES (%s, %s)", (oznaka, naziv))
+        return k.lastrowid
+
+
+def ustvari_opremo(inventarna="INV-1", naziv="Projektor 1", stanje="uporabna", ucilnica_id=None):
+    if ucilnica_id is None:
+        ucilnica_id = ustvari_ucilnico(oznaka=f"U-{inventarna}")
+    with transakcija() as k:
+        k.execute(
+            "INSERT INTO oprema (naziv, inventarna_stevilka, vrsta, stanje, ucilnica_id)"
+            " VALUES (%s, %s, 'projektor', %s, %s)",
+            (naziv, inventarna, stanje, ucilnica_id),
+        )
+        return k.lastrowid
+
+
+def ustvari_prevzeto_prijavo(prijavitelj_id, skrbnik_id, ucilnica_id):
+    """Prijava v obravnavi, ki jo je prevzel podani skrbnik."""
+    with transakcija() as k:
+        k.execute(
+            "INSERT INTO prijava_tezave (prijavitelj_id, ucilnica_id, naslov, opis, status,"
+            " skrbnik_id, prevzeta_ob)"
+            " VALUES (%s, %s, 'Ne dela', 'Opis', 'v_obravnavi', %s, UTC_TIMESTAMP())",
+            (prijavitelj_id, ucilnica_id, skrbnik_id),
+        )
+        return k.lastrowid
+
+
+def stevilo_vrstic(tabela):
+    with transakcija() as k:
+        k.execute(f"SELECT COUNT(*) AS n FROM {tabela}")
+        return k.fetchone()["n"]
+
+
+def ustvari_rezervacijo(uporabnik_id, oprema_id, zacetek, konec, preklicana=False):
+    """Vstavi rezervacijo neposredno v bazo (časi v UTC) in vrne njen id."""
+    with transakcija() as k:
+        if preklicana:
+            k.execute(
+                "INSERT INTO rezervacija (uporabnik_id, oprema_id, zacetek, konec, status,"
+                " preklicana_ob, preklical_id) VALUES (%s, %s, %s, %s, 'preklicana',"
+                " UTC_TIMESTAMP(), %s)",
+                (uporabnik_id, oprema_id, zacetek, konec, uporabnik_id),
+            )
+        else:
+            k.execute(
+                "INSERT INTO rezervacija (uporabnik_id, oprema_id, zacetek, konec)"
+                " VALUES (%s, %s, %s, %s)",
+                (uporabnik_id, oprema_id, zacetek, konec),
+            )
+        return k.lastrowid
+
+
+def jutri_ob(ura, minuta=0):
+    """Jutrišnji dan ob podani uri (UTC, naiven datetime kot v bazi)."""
+    from datetime import timedelta
+
+    from app.cas import zdaj_utc
+
+    jutri = zdaj_utc() + timedelta(days=1)
+    return jutri.replace(hour=ura, minute=minuta, second=0, microsecond=0)

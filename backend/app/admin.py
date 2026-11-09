@@ -1,12 +1,16 @@
-"""Administracija: uporabniški računi (US-14)."""
+"""Administracija: uporabniški računi (US-14), učilnice in oprema (US-15)."""
 
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from flask_login import current_user
 
 from .auth import zahteva_vlogo
 from .db import transakcija
 from .napake import PoslovnaNapaka
-from .obrazci import ObrazecNovUporabnik
+from .obrazci import ObrazecNovUporabnik, ObrazecOprema, ObrazecUcilnica, ObrazecUrejanjeUporabnika
+from .repositories import oprema as repo_oprema
+from .repositories import ucilnice as repo_ucilnice
 from .repositories import uporabniki as repo_uporabniki
+from .services import evidence as storitev_evidence
 from .services import uporabniki as storitev_uporabniki
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -34,3 +38,103 @@ def nov_uporabnik():
         except PoslovnaNapaka as e:
             flash(e.sporocilo, "napaka")
     return render_template("admin/nov_uporabnik.html", obrazec=obrazec)
+
+
+@bp.route("/uporabniki/<int:id_uporabnika>", methods=["GET", "POST"])
+@zahteva_vlogo("administrator")
+def uredi_uporabnika(id_uporabnika):
+    with transakcija() as k:
+        uporabnik = repo_uporabniki.najdi(k, id_uporabnika)
+    if uporabnik is None:
+        abort(404)
+
+    obrazec = ObrazecUrejanjeUporabnika(data=uporabnik)
+    if obrazec.validate_on_submit():
+        try:
+            storitev_uporabniki.posodobi(current_user, id_uporabnika, obrazec.ime.data,
+                                         obrazec.priimek.data, obrazec.email.data,
+                                         obrazec.vloga.data, obrazec.aktiven.data)
+            flash("Podatki uporabnika so shranjeni.", "uspeh")
+            return redirect(url_for("admin.uporabniki"))
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
+    return render_template("admin/uredi_uporabnika.html", obrazec=obrazec, uporabnik=uporabnik)
+
+
+# --- Učilnice (US-15) ---------------------------------------------------------
+
+@bp.get("/ucilnice")
+@zahteva_vlogo("administrator")
+def ucilnice():
+    with transakcija() as k:
+        seznam = repo_ucilnice.vse(k)
+    return render_template("admin/ucilnice.html", ucilnice=seznam)
+
+
+@bp.route("/ucilnice/nova", methods=["GET", "POST"])
+@zahteva_vlogo("administrator")
+def nova_ucilnica():
+    obrazec = ObrazecUcilnica()
+    if obrazec.validate_on_submit():
+        try:
+            storitev_evidence.dodaj_ucilnico(current_user, obrazec.oznaka.data,
+                                             obrazec.naziv.data, obrazec.opis.data)
+            flash("Učilnica je dodana.", "uspeh")
+            return redirect(url_for("admin.ucilnice"))
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
+    return render_template("admin/ucilnica.html", obrazec=obrazec, ucilnica=None)
+
+
+@bp.route("/ucilnice/<int:id_ucilnice>", methods=["GET", "POST"])
+@zahteva_vlogo("administrator")
+def uredi_ucilnico(id_ucilnice):
+    with transakcija() as k:
+        ucilnica = repo_ucilnice.najdi(k, id_ucilnice)
+    if ucilnica is None:
+        abort(404)
+
+    obrazec = ObrazecUcilnica(data=ucilnica)
+    # Oznake ni mogoče spreminjati: vedno uporabimo shranjeno vrednost.
+    obrazec.oznaka.data = ucilnica["oznaka"]
+    if obrazec.validate_on_submit():
+        try:
+            storitev_evidence.uredi_ucilnico(current_user, id_ucilnice, obrazec.naziv.data,
+                                             obrazec.opis.data)
+            flash("Učilnica je shranjena.", "uspeh")
+            return redirect(url_for("admin.ucilnice"))
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
+    return render_template("admin/ucilnica.html", obrazec=obrazec, ucilnica=ucilnica)
+
+
+# --- Oprema (US-15) -----------------------------------------------------------
+
+@bp.route("/oprema/nova", methods=["GET", "POST"], defaults={"id_opreme": None})
+@bp.route("/oprema/<int:id_opreme>", methods=["GET", "POST"])
+@zahteva_vlogo("administrator")
+def uredi_opremo(id_opreme):
+    with transakcija() as k:
+        oprema = repo_oprema.najdi(k, id_opreme) if id_opreme is not None else None
+        seznam_ucilnic = repo_ucilnice.vse(k)
+    if id_opreme is not None and oprema is None:
+        abort(404)
+    if not seznam_ucilnic:
+        flash("Najprej dodaj vsaj eno učilnico (lokacijo opreme).", "opozorilo")
+        return redirect(url_for("admin.nova_ucilnica"))
+
+    obrazec = ObrazecOprema(data=oprema)
+    obrazec.ucilnica_id.choices = [(u["id"], f"{u['oznaka']} – {u['naziv']}")
+                                   for u in seznam_ucilnic]
+    if obrazec.validate_on_submit():
+        try:
+            storitev_evidence.shrani_opremo(
+                current_user, id_opreme, obrazec.naziv.data, obrazec.inventarna_stevilka.data,
+                obrazec.vrsta.data, obrazec.opis.data, obrazec.stanje.data,
+                obrazec.ucilnica_id.data,
+            )
+            flash("Oprema je shranjena.", "uspeh")
+            return redirect(url_for("oprema.seznam"))
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
+    return render_template("admin/oprema.html", obrazec=obrazec, oprema=oprema)

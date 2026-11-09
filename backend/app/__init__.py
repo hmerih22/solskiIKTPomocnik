@@ -12,8 +12,10 @@ from flask import Flask, redirect, render_template, url_for
 from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
-from . import admin, auth, cli, db
+from . import admin, auth, cli, db, oprema, rezervacije
+from .cas import oblikuj
 from .config import nalozi_nastavitve
+from .napake import Prepovedano
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
 # zato Flasku povemo, kje jih najde.
@@ -51,7 +53,7 @@ def create_app(test_config=None):
     csrf.init_app(app)
     auth.login_manager.init_app(app)
     cli.init_app(app)
-    for modul in (auth, admin):
+    for modul in (auth, oprema, rezervacije, admin):
         app.register_blueprint(modul.bp)
 
     @app.get("/")
@@ -71,9 +73,16 @@ def create_app(test_config=None):
 def _registriraj_predloge(app):
     """Spremenljivke, ki so na voljo v vseh Jinja predlogah."""
 
+    def ima_pot(ime):
+        """Ali pot obstaja. Povezave na strani, ki še niso narejene, se ne prikažejo."""
+        return ime in app.view_functions
+
+    # {{ rezervacija.zacetek | cas }} prikaže UTC iz baze v lokalnem času.
+    app.add_template_filter(oblikuj, "cas")
+
     @app.context_processor
     def skupne_spremenljivke():
-        return {"nazivi_vlog": auth.NAZIVI_VLOG}
+        return {"nazivi_vlog": auth.NAZIVI_VLOG, "ima_pot": ima_pot}
 
 
 def _registriraj_napake(app):
@@ -86,6 +95,11 @@ def _registriraj_napake(app):
     def prepovedano(_napaka):
         return render_template("napaka.html", koda=403,
                                sporocilo="Za to stran nimaš pravic."), 403
+
+    @app.errorhandler(Prepovedano)
+    def prepovedano_v_storitvi(_napaka):
+        # Storitev je zavrnila operacijo zaradi pravic: enako kot 403.
+        return prepovedano(_napaka)
 
     @app.errorhandler(404)
     def ni_najdeno(_napaka):

@@ -13,3 +13,49 @@
     {% endfor %}
   </div>
 {% endmacro %}
+
+{# Stanje je vedno izpisano z besedilom, ne samo z barvo (dostopnost). #}
+{% macro stanje_opreme(stanje) %}
+  {% if stanje == "uporabna" %}
+    <span class="znacka znacka-ok">Uporabna</span>
+  {% else %}
+    <span class="znacka znacka-slabo">Nedelujoča</span>
+    <br><small>Rezervacija ni mogoča</small>
+  {% endif %}
+{% endmacro %}
+
+{# Tabela rezervacij za stran Moje rezervacije. #}
+{% macro tabela_rezervacij(rezervacije, zdaj, preklicane=false) %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead>
+      <tr><th>Oprema</th><th>Termin</th><th>Status</th>{% if preklicane %}<th>Razlog preklica</th>{% endif %}</tr>
+    </thead>
+    <tbody>
+      {% for r in rezervacije %}
+      <tr>
+        <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small>
+          {% if not preklicane and r.konec > zdaj and r.oprema_stanje == "nedelujoca" %}
+            <div class="opozorilo-vrstica">⚠ Oprema je označena kot nedelujoča.</div>
+          {% endif %}
+        </td>
+        <td>{{ r.zacetek | cas }} –<br>{{ r.konec | cas }}</td>
+        <td>
+          {% if r.status == "preklicana" %}
+            <span class="znacka znacka-siva">Preklicana</span>
+            {% if r.preklicana_ob %}<br><small>{{ r.preklicana_ob | cas }}</small>{% endif %}
+          {% elif r.konec <= zdaj %}
+            <span class="znacka znacka-siva">Pretekla</span>
+          {% elif r.zacetek <= zdaj %}
+            <span class="znacka znacka-v_obravnavi">Poteka</span>
+          {% else %}
+            <span class="znacka znacka-ok">Prihodnja</span>
+          {% endif %}
+        </td>
+        {% if preklicane %}<td>{{ r.razlog_preklica or "—" }}</td>{% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endmacro %}

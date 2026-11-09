@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Oprema{% endblock %}
+{% block vsebina %}
+  <div class="naslovna-vrstica">
+    <h1>Pregled opreme</h1>
+    {% if current_user.je_administrator %}
+      <a class="gumb" href="{{ url_for('admin.uredi_opremo') }}">Dodaj opremo</a>
+    {% endif %}
+  </div>
+
+  {% if oprema %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead>
+      <tr><th>Naziv</th><th>Inventarna št.</th><th>Vrsta</th><th>Lokacija</th><th>Stanje</th><th>Dejanja</th></tr>
+    </thead>
+    <tbody>
+      {% for o in oprema %}
+      <tr {% if o.stanje == "nedelujoca" %}class="vrstica-neaktivna"{% endif %}>
+        <td>{{ o.naziv }}{% if o.opis %}<br><small>{{ o.opis }}</small>{% endif %}</td>
+        <td>{{ o.inventarna_stevilka }}</td>
+        <td>{{ o.vrsta }}</td>
+        <td>{{ o.ucilnica_oznaka }} – {{ o.ucilnica_naziv }}</td>
+        <td>{{ m.stanje_opreme(o.stanje) }}</td>
+        <td class="dejanja">
+          {% if o.stanje == "uporabna" and ima_pot("rezervacije.nova") %}
+            <a class="gumb gumb-majhen" href="{{ url_for('rezervacije.nova', id_opreme=o.id) }}">Preveri termin</a>
+          {% endif %}
+          {% if ima_pot("prijave.nova") %}
+            <a class="gumb gumb-majhen gumb-drugotni" href="{{ url_for('prijave.nova', oprema_id=o.id) }}">Prijavi težavo</a>
+          {% endif %}
+          {% if current_user.je_administrator %}
+            <a class="gumb gumb-majhen gumb-povezava" href="{{ url_for('admin.uredi_opremo', id_opreme=o.id) }}">Uredi</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Ni evidentirane opreme</p>
+  {% endif %}
+{% endblock %}

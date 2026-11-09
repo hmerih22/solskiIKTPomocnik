@@ -13,3 +13,11 @@ class PoslovnaNapaka(Exception):
     def __init__(self, sporocilo):
         super().__init__(sporocilo)
         self.sporocilo = sporocilo
+
+
+class Prepovedano(Exception):
+    """Uporabnik nima pravice za to operacijo (odgovor 403).
+
+    Storitev pravice preveri sama, zato pravila veljajo tudi, če bi kdo
+    zahtevo poslal neposredno, mimo uporabniškega vmesnika.
+    """
