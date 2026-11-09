@@ -2,7 +2,12 @@
 {% import "_makri.html" as m with context %}
 {% block naslov %}Oprema{% endblock %}
 {% block vsebina %}
-  <h1>Pregled opreme</h1>
+  <div class="naslovna-vrstica">
+    <h1>Pregled opreme</h1>
+    {% if current_user.je_administrator %}
+      <a class="gumb" href="{{ url_for('admin.uredi_opremo') }}">Dodaj opremo</a>
+    {% endif %}
+  </div>
 
   {% if oprema %}
   <div class="tabela-ovoj">
@@ -24,6 +29,9 @@
           {% endif %}
           {% if ima_pot("prijave.nova") %}
             <a class="gumb gumb-majhen gumb-drugotni" href="{{ url_for('prijave.nova', oprema_id=o.id) }}">Prijavi težavo</a>
+          {% endif %}
+          {% if current_user.je_administrator %}
+            <a class="gumb gumb-majhen gumb-povezava" href="{{ url_for('admin.uredi_opremo', id_opreme=o.id) }}">Uredi</a>
           {% endif %}
         </td>
       </tr>

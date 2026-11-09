@@ -66,3 +66,17 @@ class ObrazecUcilnica(FlaskForm):
                         validators=[DataRequired(OBVEZNO), Length(max=100)])
     opis = TextAreaField("Opis", filters=[_ocisti], validators=[Optional(), Length(max=2000)])
     potrdi = SubmitField("Shrani")
+
+
+class ObrazecOprema(FlaskForm):
+    naziv = StringField("Naziv", filters=[_ocisti],
+                        validators=[DataRequired(OBVEZNO), Length(max=150)])
+    inventarna_stevilka = StringField("Inventarna številka", filters=[_ocisti],
+                                      validators=[DataRequired(OBVEZNO), Length(max=50)])
+    vrsta = StringField("Vrsta", filters=[_ocisti],
+                        validators=[DataRequired(OBVEZNO), Length(max=50)])
+    opis = TextAreaField("Opis", filters=[_ocisti], validators=[Optional(), Length(max=2000)])
+    stanje = SelectField("Stanje", choices=[("uporabna", "Uporabna"), ("nedelujoca", "Nedelujoča")])
+    # Izbire (učilnice) se nastavijo v poti, ker prihajajo iz baze.
+    ucilnica_id = SelectField("Lokacija (učilnica)", coerce=int)
+    potrdi = SubmitField("Shrani")

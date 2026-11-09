@@ -10,7 +10,10 @@ from mysql.connector.errors import IntegrityError
 
 from ..db import transakcija
 from ..napake import PoslovnaNapaka, Prepovedano
+from ..repositories import oprema as repo_oprema
 from ..repositories import ucilnice as repo_ucilnice
+
+STANJA = ("uporabna", "nedelujoca")
 
 
 def _ocisti(vrednost):
@@ -59,3 +62,40 @@ def uredi_ucilnico(uporabnik, id_ucilnice, naziv, opis=None):
         if repo_ucilnice.najdi(k, id_ucilnice) is None:
             raise PoslovnaNapaka("Učilnica ne obstaja.")
         repo_ucilnice.posodobi(k, id_ucilnice, naziv, opis)
+
+
+# --- Oprema ------------------------------------------------------------------
+
+def shrani_opremo(uporabnik, id_opreme, naziv, inventarna_stevilka, vrsta, opis, stanje,
+                  ucilnica_id):
+    """Doda (id_opreme=None) ali uredi opremo. Vrne njen id."""
+    _preveri_administratorja(uporabnik)
+    naziv, inventarna_stevilka, vrsta = _ocisti(naziv), _ocisti(inventarna_stevilka), _ocisti(vrsta)
+    opis = _ocisti(opis) or None
+    if not naziv or not inventarna_stevilka or not vrsta:
+        raise PoslovnaNapaka("Naziv, inventarna številka in vrsta so obvezni.")
+    if stanje not in STANJA:
+        raise PoslovnaNapaka("Neveljavno stanje opreme.")
+
+    napaka = PoslovnaNapaka(f"Oprema z inventarno številko »{inventarna_stevilka}« že obstaja.")
+    try:
+        with transakcija() as k:
+            if repo_ucilnice.najdi(k, ucilnica_id) is None:
+                raise PoslovnaNapaka("Izbrana učilnica ne obstaja.")
+            obstojeca = repo_oprema.najdi_po_inventarni(k, inventarna_stevilka)
+            if obstojeca and obstojeca["id"] != id_opreme:
+                raise napaka
+
+            if id_opreme is None:
+                return repo_oprema.ustvari(k, naziv, inventarna_stevilka, vrsta, opis, stanje,
+                                           ucilnica_id)
+            # Zaklep: med urejanjem ne more nastati rezervacija z zastarelim stanjem.
+            if repo_oprema.zakleni(k, id_opreme) is None:
+                raise PoslovnaNapaka("Oprema ne obstaja.")
+            repo_oprema.posodobi(k, id_opreme, naziv, inventarna_stevilka, vrsta, opis, stanje,
+                                 ucilnica_id)
+            return id_opreme
+    except IntegrityError as e:
+        if _je_podvojena_vrednost(e):
+            raise napaka from e
+        raise

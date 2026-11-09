@@ -6,7 +6,8 @@ from flask_login import current_user
 from .auth import zahteva_vlogo
 from .db import transakcija
 from .napake import PoslovnaNapaka
-from .obrazci import ObrazecNovUporabnik, ObrazecUcilnica, ObrazecUrejanjeUporabnika
+from .obrazci import ObrazecNovUporabnik, ObrazecOprema, ObrazecUcilnica, ObrazecUrejanjeUporabnika
+from .repositories import oprema as repo_oprema
 from .repositories import ucilnice as repo_ucilnice
 from .repositories import uporabniki as repo_uporabniki
 from .services import evidence as storitev_evidence
@@ -105,3 +106,35 @@ def uredi_ucilnico(id_ucilnice):
         except PoslovnaNapaka as e:
             flash(e.sporocilo, "napaka")
     return render_template("admin/ucilnica.html", obrazec=obrazec, ucilnica=ucilnica)
+
+
+# --- Oprema (US-15) -----------------------------------------------------------
+
+@bp.route("/oprema/nova", methods=["GET", "POST"], defaults={"id_opreme": None})
+@bp.route("/oprema/<int:id_opreme>", methods=["GET", "POST"])
+@zahteva_vlogo("administrator")
+def uredi_opremo(id_opreme):
+    with transakcija() as k:
+        oprema = repo_oprema.najdi(k, id_opreme) if id_opreme is not None else None
+        seznam_ucilnic = repo_ucilnice.vse(k)
+    if id_opreme is not None and oprema is None:
+        abort(404)
+    if not seznam_ucilnic:
+        flash("Najprej dodaj vsaj eno učilnico (lokacijo opreme).", "opozorilo")
+        return redirect(url_for("admin.nova_ucilnica"))
+
+    obrazec = ObrazecOprema(data=oprema)
+    obrazec.ucilnica_id.choices = [(u["id"], f"{u['oznaka']} – {u['naziv']}")
+                                   for u in seznam_ucilnic]
+    if obrazec.validate_on_submit():
+        try:
+            storitev_evidence.shrani_opremo(
+                current_user, id_opreme, obrazec.naziv.data, obrazec.inventarna_stevilka.data,
+                obrazec.vrsta.data, obrazec.opis.data, obrazec.stanje.data,
+                obrazec.ucilnica_id.data,
+            )
+            flash("Oprema je shranjena.", "uspeh")
+            return redirect(url_for("oprema.seznam"))
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
+    return render_template("admin/oprema.html", obrazec=obrazec, oprema=oprema)
