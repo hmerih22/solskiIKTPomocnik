@@ -121,3 +121,39 @@ def spremeni_uporabnika(id_uporabnika, **stolpci):
 
 def prijavi(odjemalec, email, geslo=GESLO):
     return odjemalec.post("/prijava", data={"email": email, "geslo": geslo})
+
+
+def ustvari_ucilnico(oznaka="12", naziv="Učilnica 12"):
+    with transakcija() as k:
+        k.execute("INSERT INTO ucilnica (oznaka, naziv) VALUES (%s, %s)", (oznaka, naziv))
+        return k.lastrowid
+
+
+def ustvari_opremo(inventarna="INV-1", naziv="Projektor 1", stanje="uporabna", ucilnica_id=None):
+    if ucilnica_id is None:
+        ucilnica_id = ustvari_ucilnico(oznaka=f"U-{inventarna}")
+    with transakcija() as k:
+        k.execute(
+            "INSERT INTO oprema (naziv, inventarna_stevilka, vrsta, stanje, ucilnica_id)"
+            " VALUES (%s, %s, 'projektor', %s, %s)",
+            (naziv, inventarna, stanje, ucilnica_id),
+        )
+        return k.lastrowid
+
+
+def ustvari_prevzeto_prijavo(prijavitelj_id, skrbnik_id, ucilnica_id):
+    """Prijava v obravnavi, ki jo je prevzel podani skrbnik."""
+    with transakcija() as k:
+        k.execute(
+            "INSERT INTO prijava_tezave (prijavitelj_id, ucilnica_id, naslov, opis, status,"
+            " skrbnik_id, prevzeta_ob)"
+            " VALUES (%s, %s, 'Ne dela', 'Opis', 'v_obravnavi', %s, UTC_TIMESTAMP())",
+            (prijavitelj_id, ucilnica_id, skrbnik_id),
+        )
+        return k.lastrowid
+
+
+def stevilo_vrstic(tabela):
+    with transakcija() as k:
+        k.execute(f"SELECT COUNT(*) AS n FROM {tabela}")
+        return k.fetchone()["n"]
