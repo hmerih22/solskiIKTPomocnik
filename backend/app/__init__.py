@@ -12,7 +12,7 @@ from flask import Flask, redirect, render_template, url_for
 from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
-from . import admin, auth, cli, db
+from . import admin, auth, cli, db, oprema
 from .config import nalozi_nastavitve
 from .napake import Prepovedano
 
@@ -52,7 +52,7 @@ def create_app(test_config=None):
     csrf.init_app(app)
     auth.login_manager.init_app(app)
     cli.init_app(app)
-    for modul in (auth, admin):
+    for modul in (auth, oprema, admin):
         app.register_blueprint(modul.bp)
 
     @app.get("/")
@@ -72,9 +72,13 @@ def create_app(test_config=None):
 def _registriraj_predloge(app):
     """Spremenljivke, ki so na voljo v vseh Jinja predlogah."""
 
+    def ima_pot(ime):
+        """Ali pot obstaja. Povezave na strani, ki še niso narejene, se ne prikažejo."""
+        return ime in app.view_functions
+
     @app.context_processor
     def skupne_spremenljivke():
-        return {"nazivi_vlog": auth.NAZIVI_VLOG}
+        return {"nazivi_vlog": auth.NAZIVI_VLOG, "ima_pot": ima_pot}
 
 
 def _registriraj_napake(app):

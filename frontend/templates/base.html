@@ -13,6 +13,7 @@
     {% if current_user.is_authenticated %}
     <nav class="meni" aria-label="Glavni meni">
       <a href="{{ url_for('domov') }}">Začetna stran</a>
+      <a href="{{ url_for('oprema.seznam') }}">Oprema</a>
       {% if current_user.je_skrbnik %}
         <span class="meni-locilo" aria-hidden="true"></span>
         {# Povezave za IKT skrbnika se dodajo z naslednjimi uporabniškimi zgodbami. #}
