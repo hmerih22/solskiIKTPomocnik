@@ -157,3 +157,32 @@ def stevilo_vrstic(tabela):
     with transakcija() as k:
         k.execute(f"SELECT COUNT(*) AS n FROM {tabela}")
         return k.fetchone()["n"]
+
+
+def ustvari_rezervacijo(uporabnik_id, oprema_id, zacetek, konec, preklicana=False):
+    """Vstavi rezervacijo neposredno v bazo (časi v UTC) in vrne njen id."""
+    with transakcija() as k:
+        if preklicana:
+            k.execute(
+                "INSERT INTO rezervacija (uporabnik_id, oprema_id, zacetek, konec, status,"
+                " preklicana_ob, preklical_id) VALUES (%s, %s, %s, %s, 'preklicana',"
+                " UTC_TIMESTAMP(), %s)",
+                (uporabnik_id, oprema_id, zacetek, konec, uporabnik_id),
+            )
+        else:
+            k.execute(
+                "INSERT INTO rezervacija (uporabnik_id, oprema_id, zacetek, konec)"
+                " VALUES (%s, %s, %s, %s)",
+                (uporabnik_id, oprema_id, zacetek, konec),
+            )
+        return k.lastrowid
+
+
+def jutri_ob(ura, minuta=0):
+    """Jutrišnji dan ob podani uri (UTC, naiven datetime kot v bazi)."""
+    from datetime import timedelta
+
+    from app.cas import zdaj_utc
+
+    jutri = zdaj_utc() + timedelta(days=1)
+    return jutri.replace(hour=ura, minute=minuta, second=0, microsecond=0)
