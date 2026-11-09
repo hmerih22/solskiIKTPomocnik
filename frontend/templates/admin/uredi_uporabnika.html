@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Urejanje uporabnika{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('admin.uporabniki') }}">← Nazaj na seznam uporabnikov</a></p>
+  <section class="kartica srednja">
+    <h1>{{ uporabnik.ime }} {{ uporabnik.priimek }}</h1>
+    {# Ob odstranitvi kljukice »aktiven« brskalnik zahteva potrditev deaktivacije. #}
+    <form method="post" novalidate
+          onsubmit="return document.getElementById('aktiven').checked || confirm('Res želiš deaktivirati ta račun? Uporabnik se ne bo več mogel prijaviti.');">
+      {{ obrazec.hidden_tag() }}
+      <div class="vrstica-polj">
+        {{ m.polje(obrazec.ime) }}
+        {{ m.polje(obrazec.priimek) }}
+      </div>
+      {{ m.polje(obrazec.email) }}
+      {{ m.polje(obrazec.vloga) }}
+      {{ m.polje(obrazec.aktiven) }}
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+    <p class="namig">Računi se ne brišejo. Rezervacije in prijave deaktiviranega uporabnika ostanejo v evidenci.</p>
+  </section>
+{% endblock %}

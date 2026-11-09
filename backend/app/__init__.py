@@ -14,6 +14,7 @@ from flask_wtf.csrf import CSRFProtect
 
 from . import admin, auth, cli, db
 from .config import nalozi_nastavitve
+from .napake import Prepovedano
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
 # zato Flasku povemo, kje jih najde.
@@ -86,6 +87,11 @@ def _registriraj_napake(app):
     def prepovedano(_napaka):
         return render_template("napaka.html", koda=403,
                                sporocilo="Za to stran nimaš pravic."), 403
+
+    @app.errorhandler(Prepovedano)
+    def prepovedano_v_storitvi(_napaka):
+        # Storitev je zavrnila operacijo zaradi pravic: enako kot 403.
+        return prepovedano(_napaka)
 
     @app.errorhandler(404)
     def ni_najdeno(_napaka):

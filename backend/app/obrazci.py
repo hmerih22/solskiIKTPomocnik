@@ -8,7 +8,7 @@ zavrne tudi vnos, ki vsebuje samo presledke.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, SelectField, StringField, SubmitField
+from wtforms import BooleanField, EmailField, PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Regexp
 
 from .vloge import NAZIVI_VLOG
@@ -44,3 +44,16 @@ class ObrazecNovUporabnik(FlaskForm):
     # Seznam vlog je zaprt: vrednost, ki ni na seznamu, obrazec zavrne.
     vloga = SelectField("Vloga", choices=list(NAZIVI_VLOG.items()), default="ucitelj")
     potrdi = SubmitField("Ustvari račun")
+
+
+class ObrazecUrejanjeUporabnika(FlaskForm):
+    ime = StringField("Ime", filters=[_ocisti],
+                      validators=[DataRequired(OBVEZNO), Length(max=100)])
+    priimek = StringField("Priimek", filters=[_ocisti],
+                          validators=[DataRequired(OBVEZNO), Length(max=100)])
+    email = EmailField("E-poštni naslov", filters=[_ocisti],
+                       validators=[DataRequired(OBVEZNO), Length(max=254),
+                                   Regexp(VZOREC_EMAIL, message="Neveljaven e-poštni naslov.")])
+    vloga = SelectField("Vloga", choices=list(NAZIVI_VLOG.items()))
+    aktiven = BooleanField("Račun je aktiven")
+    potrdi = SubmitField("Shrani spremembe")
