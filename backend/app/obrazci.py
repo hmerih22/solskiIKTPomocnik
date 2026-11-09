@@ -8,8 +8,8 @@ zavrne tudi vnos, ki vsebuje samo presledke.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, EmailField, PasswordField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, Length, Regexp
+from wtforms import BooleanField, EmailField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 from .vloge import NAZIVI_VLOG
 
@@ -57,3 +57,12 @@ class ObrazecUrejanjeUporabnika(FlaskForm):
     vloga = SelectField("Vloga", choices=list(NAZIVI_VLOG.items()))
     aktiven = BooleanField("Račun je aktiven")
     potrdi = SubmitField("Shrani spremembe")
+
+
+class ObrazecUcilnica(FlaskForm):
+    oznaka = StringField("Oznaka", filters=[_ocisti],
+                         validators=[DataRequired(OBVEZNO), Length(max=30)])
+    naziv = StringField("Naziv", filters=[_ocisti],
+                        validators=[DataRequired(OBVEZNO), Length(max=100)])
+    opis = TextAreaField("Opis", filters=[_ocisti], validators=[Optional(), Length(max=2000)])
+    potrdi = SubmitField("Shrani")
