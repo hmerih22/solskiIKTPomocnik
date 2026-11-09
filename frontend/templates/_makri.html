@@ -14,10 +14,12 @@
   </div>
 {% endmacro %}
 
+{# Stanje je vedno izpisano z besedilom, ne samo z barvo (dostopnost). #}
 {% macro stanje_opreme(stanje) %}
   {% if stanje == "uporabna" %}
     <span class="znacka znacka-ok">Uporabna</span>
   {% else %}
     <span class="znacka znacka-slabo">Nedelujoča</span>
+    <br><small>Rezervacija ni mogoča</small>
   {% endif %}
 {% endmacro %}

@@ -4,6 +4,7 @@
 {% block vsebina %}
   <h1>Pregled opreme</h1>
 
+  {% if oprema %}
   <div class="tabela-ovoj">
   <table class="tabela">
     <thead>
@@ -11,14 +12,14 @@
     </thead>
     <tbody>
       {% for o in oprema %}
-      <tr>
+      <tr {% if o.stanje == "nedelujoca" %}class="vrstica-neaktivna"{% endif %}>
         <td>{{ o.naziv }}{% if o.opis %}<br><small>{{ o.opis }}</small>{% endif %}</td>
         <td>{{ o.inventarna_stevilka }}</td>
         <td>{{ o.vrsta }}</td>
         <td>{{ o.ucilnica_oznaka }} – {{ o.ucilnica_naziv }}</td>
         <td>{{ m.stanje_opreme(o.stanje) }}</td>
         <td class="dejanja">
-          {% if ima_pot("rezervacije.nova") %}
+          {% if o.stanje == "uporabna" and ima_pot("rezervacije.nova") %}
             <a class="gumb gumb-majhen" href="{{ url_for('rezervacije.nova', id_opreme=o.id) }}">Preveri termin</a>
           {% endif %}
           {% if ima_pot("prijave.nova") %}
@@ -30,4 +31,7 @@
     </tbody>
   </table>
   </div>
+  {% else %}
+    <p class="prazno">Ni evidentirane opreme</p>
+  {% endif %}
 {% endblock %}
