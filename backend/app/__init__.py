@@ -12,7 +12,7 @@ from flask import Flask, redirect, render_template, url_for
 from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
-from . import admin, auth, cli, db, oprema
+from . import admin, auth, cli, db, oprema, rezervacije
 from .cas import oblikuj
 from .config import nalozi_nastavitve
 from .napake import Prepovedano
@@ -53,7 +53,7 @@ def create_app(test_config=None):
     csrf.init_app(app)
     auth.login_manager.init_app(app)
     cli.init_app(app)
-    for modul in (auth, oprema, admin):
+    for modul in (auth, oprema, rezervacije, admin):
         app.register_blueprint(modul.bp)
 
     @app.get("/")

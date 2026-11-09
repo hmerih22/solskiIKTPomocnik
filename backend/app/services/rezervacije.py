@@ -4,7 +4,10 @@
 """
 
 from ..cas import zdaj_utc
+from ..db import transakcija
 from ..napake import PoslovnaNapaka
+from ..repositories import oprema as repo_oprema
+from ..repositories import rezervacije as repo_rezervacije
 
 
 def preveri_termin(zacetek, konec, zdaj=None):
@@ -15,3 +18,26 @@ def preveri_termin(zacetek, konec, zdaj=None):
         raise PoslovnaNapaka("Začetek mora biti pred koncem rezervacije.")
     if zacetek <= (zdaj or zdaj_utc()):
         raise PoslovnaNapaka("Začetek rezervacije mora biti v prihodnosti.")
+
+
+def preveri_razpolozljivost(id_opreme, zacetek, konec):
+    """Informativno preverjanje termina (US-02). Rezervacije NE ustvari.
+
+    Vrne slovar: prosta (bool), razlog (besedilo ali None),
+    prekrivajoce (seznam rezervacij). Ob neveljavnem terminu sproži
+    PoslovnaNapaka.
+    """
+    preveri_termin(zacetek, konec)
+    with transakcija() as k:
+        oprema = repo_oprema.najdi(k, id_opreme)
+        if oprema is None:
+            raise PoslovnaNapaka("Izbrana oprema ne obstaja.")
+        if oprema["stanje"] != "uporabna":
+            return {"prosta": False, "prekrivajoce": [],
+                    "razlog": "Oprema je nedelujoča in je ni mogoče rezervirati."}
+        prekrivajoce = repo_rezervacije.prekrivajoce(k, id_opreme, zacetek, konec, zakleni=False)
+
+    if prekrivajoce:
+        return {"prosta": False, "prekrivajoce": prekrivajoce,
+                "razlog": "Oprema je v izbranem terminu že rezervirana."}
+    return {"prosta": True, "prekrivajoce": [], "razlog": None}

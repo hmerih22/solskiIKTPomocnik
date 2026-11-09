@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Rezervacija – {{ oprema.naziv }}{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('oprema.seznam') }}">← Nazaj na opremo</a></p>
+  <h1>Rezervacija opreme</h1>
+
+  <div class="mreza mreza-2">
+    <section class="kartica">
+      <h2>{{ oprema.naziv }}</h2>
+      <p>
+        {{ oprema.inventarna_stevilka }} · {{ oprema.vrsta }} · {{ oprema.ucilnica_oznaka }} – {{ oprema.ucilnica_naziv }}<br>
+        Stanje: {{ m.stanje_opreme(oprema.stanje) }}
+      </p>
+
+      {% if oprema.stanje != "uporabna" %}
+        <div class="sporocilo sporocilo-napaka">Oprema je nedelujoča in je ni mogoče rezervirati.</div>
+      {% else %}
+        <form method="post" novalidate>
+          {{ obrazec.hidden_tag() }}
+          <div class="vrstica-polj">
+            {{ m.polje(obrazec.zacetek) }}
+            {{ m.polje(obrazec.konec) }}
+          </div>
+          <p class="namig">Čas je v lokalnem času (Ljubljana). Rezervacija se lahko začne natanko ob koncu druge.</p>
+
+          {% if rezultat %}
+            {% if rezultat.prosta %}
+              <div class="sporocilo sporocilo-uspeh">Oprema je v izbranem terminu prosta.</div>
+            {% else %}
+              <div class="sporocilo sporocilo-napaka">{{ rezultat.razlog }}</div>
+            {% endif %}
+          {% endif %}
+
+          {{ obrazec.preveri(class="gumb gumb-drugotni") }}
+        </form>
+      {% endif %}
+    </section>
+
+    <section class="kartica">
+      <h2>Že zasedeni termini</h2>
+      {% if zasedeni %}
+        <ul class="seznam">
+          {% for z in zasedeni %}
+            <li>
+              {{ z.zacetek | cas }} – {{ z.konec | cas }}
+              {% if z.uporabnik_id == current_user.id %}<span class="znacka znacka-ok">Moja</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="prazno">Ni prihodnjih rezervacij.</p>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}
