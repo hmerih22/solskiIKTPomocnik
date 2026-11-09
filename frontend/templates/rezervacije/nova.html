@@ -26,13 +26,14 @@
 
           {% if rezultat %}
             {% if rezultat.prosta %}
-              <div class="sporocilo sporocilo-uspeh">Oprema je v izbranem terminu prosta.</div>
+              <div class="sporocilo sporocilo-uspeh">Oprema je v izbranem terminu prosta. Rezervacijo lahko potrdiš.</div>
             {% else %}
               <div class="sporocilo sporocilo-napaka">{{ rezultat.razlog }}</div>
             {% endif %}
           {% endif %}
 
           {{ obrazec.preveri(class="gumb gumb-drugotni") }}
+          {{ obrazec.potrdi(class="gumb") }}
         </form>
       {% endif %}
     </section>

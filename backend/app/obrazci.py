@@ -92,3 +92,4 @@ class ObrazecTermin(FlaskForm):
     konec = DateTimeLocalField("Konec", format=OBLIKA_DATUMA_CASA,
                                validators=[DataRequired("Vnesi datum in čas konca.")])
     preveri = SubmitField("Preveri termin")
+    potrdi = SubmitField("Potrdi rezervacijo")
