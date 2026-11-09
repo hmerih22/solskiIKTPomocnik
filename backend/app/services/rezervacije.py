@@ -1,6 +1,11 @@
 """Poslovna pravila rezervacij (US-02, US-03).
 
 Časi so v Pythonu in v bazi vedno v UTC (glej app/cas.py).
+
+Ključno pravilo (ADR-0006): rezervacija se ustvari v transakciji, ki najprej
+zaklene zapis opreme (SELECT ... FOR UPDATE). Dve sočasni zahtevi za isto
+opremo se zato izvedeta ena za drugo: druga počaka, da prva potrdi, in nato
+že vidi novo rezervacijo kot prekrivanje.
 """
 
 from ..cas import zdaj_utc
@@ -41,3 +46,29 @@ def preveri_razpolozljivost(id_opreme, zacetek, konec):
         return {"prosta": False, "prekrivajoce": prekrivajoce,
                 "razlog": "Oprema je v izbranem terminu že rezervirana."}
     return {"prosta": True, "prekrivajoce": [], "razlog": None}
+
+
+def ustvari(uporabnik, id_opreme, zacetek, konec):
+    """Ustvari rezervacijo za prijavljenega uporabnika (US-03). Vrne njen id.
+
+    Če katero pravilo ni izpolnjeno, sproži PoslovnaNapaka z razlogom
+    zavrnitve; transakcija se razveljavi in v bazi ne ostane nič.
+    """
+    preveri_termin(zacetek, konec)
+
+    with transakcija() as k:
+        # 1. Zakleni opremo: druge rezervacije te opreme počakajo do konca transakcije.
+        oprema = repo_oprema.zakleni(k, id_opreme)
+        if oprema is None:
+            raise PoslovnaNapaka("Izbrana oprema ne obstaja.")
+
+        # 2. Stanje je prebrano pod zaklepom, zato je aktualno.
+        if oprema["stanje"] != "uporabna":
+            raise PoslovnaNapaka("Oprema je nedelujoča in je ni mogoče rezervirati.")
+
+        # 3. Ponovno preveri prekrivanje: termin je medtem lahko zasedel nekdo drug.
+        if repo_rezervacije.prekrivajoce(k, id_opreme, zacetek, konec):
+            raise PoslovnaNapaka("Termin je že zaseden. Izberi drug termin.")
+
+        # 4. Shrani. Transakcija se potrdi ob izhodu iz bloka with.
+        return repo_rezervacije.ustvari(k, uporabnik.id, id_opreme, zacetek, konec)

@@ -42,3 +42,12 @@ def zasedeni_termini(k, id_opreme, od):
         (id_opreme, od),
     )
     return k.fetchall()
+
+
+def ustvari(k, id_uporabnika, id_opreme, zacetek, konec):
+    k.execute(
+        "INSERT INTO rezervacija (uporabnik_id, oprema_id, zacetek, konec)"
+        " VALUES (%s, %s, %s, %s)",
+        (id_uporabnika, id_opreme, zacetek, konec),
+    )
+    return k.lastrowid
