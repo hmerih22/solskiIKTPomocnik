@@ -8,13 +8,15 @@ zavrne tudi vnos, ki vsebuje samo presledke.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, EmailField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, DateTimeLocalField, EmailField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 from .vloge import NAZIVI_VLOG
 
 # Preprosto preverjanje oblike ime@domena.si (brez presledkov).
 VZOREC_EMAIL = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+# Oblika vnosa <input type="datetime-local">, npr. 2026-11-10T09:00.
+OBLIKA_DATUMA_CASA = "%Y-%m-%dT%H:%M"
 OBVEZNO = "To polje je obvezno."
 
 
@@ -80,3 +82,13 @@ class ObrazecOprema(FlaskForm):
     # Izbire (učilnice) se nastavijo v poti, ker prihajajo iz baze.
     ucilnica_id = SelectField("Lokacija (učilnica)", coerce=int)
     potrdi = SubmitField("Shrani")
+
+
+class ObrazecTermin(FlaskForm):
+    """Termin rezervacije v lokalnem času (Europe/Ljubljana)."""
+
+    zacetek = DateTimeLocalField("Začetek", format=OBLIKA_DATUMA_CASA,
+                                 validators=[DataRequired("Vnesi datum in čas začetka.")])
+    konec = DateTimeLocalField("Konec", format=OBLIKA_DATUMA_CASA,
+                               validators=[DataRequired("Vnesi datum in čas konca.")])
+    preveri = SubmitField("Preveri termin")

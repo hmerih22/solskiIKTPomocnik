@@ -13,6 +13,7 @@ from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
 from . import admin, auth, cli, db, oprema
+from .cas import oblikuj
 from .config import nalozi_nastavitve
 from .napake import Prepovedano
 
@@ -75,6 +76,9 @@ def _registriraj_predloge(app):
     def ima_pot(ime):
         """Ali pot obstaja. Povezave na strani, ki še niso narejene, se ne prikažejo."""
         return ime in app.view_functions
+
+    # {{ rezervacija.zacetek | cas }} prikaže UTC iz baze v lokalnem času.
+    app.add_template_filter(oblikuj, "cas")
 
     @app.context_processor
     def skupne_spremenljivke():
