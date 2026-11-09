@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Moje rezervacije{% endblock %}
+{% block vsebina %}
+  <div class="naslovna-vrstica">
+    <h1>Moje rezervacije</h1>
+    <a class="gumb" href="{{ url_for('oprema.seznam') }}">Nova rezervacija</a>
+  </div>
+
+  <h2>Prihodnje</h2>
+  {% if prihodnje %}
+    {{ m.tabela_rezervacij(prihodnje, zdaj) }}
+  {% else %}
+    <p class="prazno">Nimaš prihodnjih rezervacij. <a href="{{ url_for('oprema.seznam') }}">Rezerviraj opremo</a>.</p>
+  {% endif %}
+
+  <h2>Pretekle</h2>
+  {% if pretekle %}
+    {{ m.tabela_rezervacij(pretekle, zdaj) }}
+  {% else %}
+    <p class="prazno">Ni preteklih rezervacij.</p>
+  {% endif %}
+
+  <h2>Preklicane</h2>
+  {% if preklicane %}
+    {{ m.tabela_rezervacij(preklicane, zdaj, preklicane=true) }}
+  {% else %}
+    <p class="prazno">Ni preklicanih rezervacij.</p>
+  {% endif %}
+{% endblock %}

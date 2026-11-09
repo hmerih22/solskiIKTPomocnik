@@ -4,6 +4,9 @@
   <h1>Pozdravljen, {{ current_user.ime }}</h1>
   <section class="kartica">
     <p>Prijavljen si kot <strong>{{ nazivi_vlog[current_user.vloga] }}</strong>.</p>
-    <p><a class="gumb" href="{{ url_for('oprema.seznam') }}">Pregled opreme</a></p>
+    <p>
+      <a class="gumb" href="{{ url_for('oprema.seznam') }}">Pregled opreme</a>
+      <a class="gumb gumb-drugotni" href="{{ url_for('rezervacije.moje') }}">Moje rezervacije</a>
+    </p>
   </section>
 {% endblock %}

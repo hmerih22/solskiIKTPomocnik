@@ -157,3 +157,48 @@ def test_socasni_prekrivajoci_rezervaciji_uspe_natanko_ena(app, monkeypatch):
 
     assert sorted(rezultati) == ["uspeh", "zavrnjena"]
     assert stevilo_vrstic("rezervacija") == 1
+
+
+# --- Moje rezervacije (#30) ---------------------------------------------------
+
+def test_moje_rezervacije(odjemalec, ucitelj):
+    from datetime import timedelta
+
+    from app.cas import v_lokalni
+
+    prijavi(odjemalec, "ucitelj@sola.si")
+    projektor = ustvari_opremo("INV-1", "Projektor")
+    prenosnik = ustvari_opremo("INV-2", "Prenosnik")
+    tablica = ustvari_opremo("INV-3", "Tablica")
+    tuja = ustvari_opremo("INV-4", "Tuja oprema")
+    vceraj = jutri_ob(9) - timedelta(days=2)
+
+    ustvari_rezervacijo(ucitelj.id, projektor, jutri_ob(9), jutri_ob(10))
+    ustvari_rezervacijo(ucitelj.id, prenosnik, vceraj, vceraj + timedelta(hours=1))
+    id_p = ustvari_rezervacijo(ucitelj.id, tablica, jutri_ob(11), jutri_ob(12), preklicana=True)
+    with transakcija() as k:
+        k.execute("UPDATE rezervacija SET razlog_preklica = 'Odpadla ura' WHERE id = %s", (id_p,))
+    ustvari_rezervacijo(ustvari_uporabnika("drugi@sola.si"), tuja, jutri_ob(9), jutri_ob(10))
+
+    stran = odjemalec.get("/rezervacije/moje").get_data(as_text=True)
+    prihodnje, ostalo = stran.split("<h2>Pretekle</h2>")
+    pretekle, preklicane = ostalo.split("<h2>Preklicane</h2>")
+
+    assert "Projektor" in prihodnje and "Prihodnja" in prihodnje
+    assert v_lokalni(jutri_ob(9)).strftime("%H:%M") in prihodnje
+    assert "Prenosnik" in pretekle and "Pretekla" in pretekle
+    assert "Tablica" in preklicane and "Odpadla ura" in preklicane
+    assert "Tuja oprema" not in stran
+
+
+def test_moje_rezervacije_brez_rezervacij(odjemalec, ucitelj):
+    prijavi(odjemalec, "ucitelj@sola.si")
+    assert "Nimaš prihodnjih rezervacij" in odjemalec.get("/rezervacije/moje").get_data(as_text=True)
+
+
+def test_po_potrditvi_preusmeri_na_moje_rezervacije(odjemalec, ucitelj):
+    prijavi(odjemalec, "ucitelj@sola.si")
+    id_o = ustvari_opremo()
+    odgovor = odjemalec.post(f"/rezervacije/nova/{id_o}", data={
+        "zacetek": _lokalno(jutri_ob(9)), "konec": _lokalno(jutri_ob(10)), "potrdi": "1"})
+    assert odgovor.headers["Location"].endswith("/rezervacije/moje")

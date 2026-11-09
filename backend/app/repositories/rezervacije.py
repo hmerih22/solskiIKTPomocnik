@@ -51,3 +51,12 @@ def ustvari(k, id_uporabnika, id_opreme, zacetek, konec):
         (id_uporabnika, id_opreme, zacetek, konec),
     )
     return k.lastrowid
+
+
+def za_uporabnika(k, id_uporabnika):
+    """Vse rezervacije uporabnika, najnovejše najprej."""
+    k.execute(
+        OSNOVNA_POIZVEDBA + " WHERE r.uporabnik_id = %s ORDER BY r.zacetek DESC",
+        (id_uporabnika,),
+    )
+    return k.fetchall()

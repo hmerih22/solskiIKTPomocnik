@@ -1,4 +1,5 @@
-"""Rezervacije opreme: preverjanje termina (US-02) in rezervacija (US-03)."""
+"""Rezervacije opreme: preverjanje termina (US-02), rezervacija (US-03)
+in pregled lastnih rezervacij (US-04)."""
 
 from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
@@ -36,7 +37,7 @@ def nova(id_opreme):
             if obrazec.potrdi.data:
                 storitev.ustvari(current_user, id_opreme, zacetek, konec)
                 flash("Rezervacija je potrjena.", "uspeh")
-                return redirect(url_for("rezervacije.nova", id_opreme=id_opreme))
+                return redirect(url_for("rezervacije.moje"))
             rezultat = storitev.preveri_razpolozljivost(id_opreme, zacetek, konec)
         except PoslovnaNapaka as e:
             flash(e.sporocilo, "napaka")
@@ -45,3 +46,21 @@ def nova(id_opreme):
         zasedeni = repo_rezervacije.zasedeni_termini(k, id_opreme, zdaj_utc())
     return render_template("rezervacije/nova.html", oprema=oprema, obrazec=obrazec,
                            rezultat=rezultat, zasedeni=zasedeni)
+
+
+@bp.get("/moje")
+@login_required
+def moje():
+    """Prihodnje, pretekle in preklicane rezervacije prijavljenega uporabnika."""
+    with transakcija() as k:
+        vse = repo_rezervacije.za_uporabnika(k, current_user.id)
+    zdaj = zdaj_utc()
+
+    prihodnje = [r for r in vse if r["status"] == "aktivna" and r["konec"] > zdaj]
+    # Prihodnje so urejene od najbližje naprej.
+    prihodnje.reverse()
+    pretekle = [r for r in vse if r["status"] == "aktivna" and r["konec"] <= zdaj]
+    preklicane = [r for r in vse if r["status"] == "preklicana"]
+
+    return render_template("rezervacije/moje.html", prihodnje=prihodnje, pretekle=pretekle,
+                           preklicane=preklicane, zdaj=zdaj)
