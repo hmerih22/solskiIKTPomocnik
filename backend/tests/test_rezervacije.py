@@ -102,3 +102,58 @@ def test_gumb_preveri_ne_ustvari_rezervacije(odjemalec, ucitelj):
         "zacetek": _lokalno(jutri_ob(9)), "konec": _lokalno(jutri_ob(10)),
         "preveri": "Preveri termin"})
     assert stevilo_vrstic("rezervacija") == 0
+
+
+# --- Sočasne rezervacije (#29) ------------------------------------------------
+
+def test_socasni_prekrivajoci_rezervaciji_uspe_natanko_ena(app, monkeypatch):
+    """Dva uporabnika hkrati rezervirata isto opremo v prekrivajočem terminu.
+
+    Vsaka nit ima svojo povezavo z bazo (svojo transakcijo). Med preverjanjem
+    prekrivanja in vpisom umetno počakamo, da bi brez zaklepanja obe niti
+    videli prost termin. Zaradi SELECT ... FOR UPDATE na opremi druga nit
+    počaka prvo in nato vidi njeno rezervacijo, zato uspe natanko ena.
+    """
+    import threading
+    import time
+
+    from app.repositories import rezervacije as repo_rezervacije
+
+    id_o = ustvari_opremo()
+    uporabnika = []
+    for email in ("prvi@sola.si", "drugi@sola.si"):
+        with transakcija() as k:
+            uporabnika.append(Uporabnik(repo_uporabniki.najdi(k, ustvari_uporabnika(email))))
+
+    originalna = repo_rezervacije.prekrivajoce
+
+    def pocasna_prekrivajoce(*args, **kwargs):
+        rezultat = originalna(*args, **kwargs)
+        time.sleep(0.5)
+        return rezultat
+
+    monkeypatch.setattr(repo_rezervacije, "prekrivajoce", pocasna_prekrivajoce)
+
+    start = threading.Barrier(2)
+    rezultati = []
+
+    def rezerviraj(uporabnik, zacetek, konec):
+        with app.app_context():
+            start.wait(timeout=10)
+            try:
+                storitev.ustvari(uporabnik, id_o, zacetek, konec)
+                rezultati.append("uspeh")
+            except PoslovnaNapaka:
+                rezultati.append("zavrnjena")
+
+    niti = [
+        threading.Thread(target=rezerviraj, args=(uporabnika[0], jutri_ob(9), jutri_ob(10))),
+        threading.Thread(target=rezerviraj, args=(uporabnika[1], jutri_ob(9, 30), jutri_ob(10, 30))),
+    ]
+    for nit in niti:
+        nit.start()
+    for nit in niti:
+        nit.join(timeout=30)
+
+    assert sorted(rezultati) == ["uspeh", "zavrnjena"]
+    assert stevilo_vrstic("rezervacija") == 1
