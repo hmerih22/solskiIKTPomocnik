@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Prijava #{{ prijava.id }}{% endblock %}
+{% block vsebina %}
+  <p><a href="{{ url_for('prijave.moje') }}">← Moje prijave</a></p>
+  <div class="naslovna-vrstica">
+    <h1>#{{ prijava.id }} {{ prijava.naslov }}</h1>
+    {{ m.status_prijave(prijava.status) }}
+  </div>
+
+  <div class="mreza mreza-2">
+    <section class="kartica">
+      <h2>Podatki o prijavi</h2>
+      <dl class="podatki">
+        <dt>Prijavitelj</dt><dd>{{ prijava.prijavitelj_ime }} {{ prijava.prijavitelj_priimek }}</dd>
+        <dt>Oddana</dt><dd>{{ prijava.ustvarjena_ob | cas }}</dd>
+        {% if prijava.oprema_naziv %}
+          <dt>Oprema</dt><dd>{{ prijava.oprema_naziv }} ({{ prijava.inventarna_stevilka }}) {{ m.stanje_opreme(prijava.oprema_stanje) }}</dd>
+        {% endif %}
+        {% if prijava.ucilnica_oznaka %}
+          <dt>Učilnica</dt><dd>{{ prijava.ucilnica_oznaka }} – {{ prijava.ucilnica_naziv }}</dd>
+        {% endif %}
+        <dt>Odgovorni skrbnik</dt>
+        <dd>{% if prijava.skrbnik_ime %}{{ prijava.skrbnik_ime }} {{ prijava.skrbnik_priimek }}
+            (prevzeto {{ prijava.prevzeta_ob | cas }}){% else %}še ni določen{% endif %}</dd>
+      </dl>
+      <h3>Opis težave</h3>
+      <p class="besedilo">{{ prijava.opis }}</p>
+
+      {% if prijava.status == "resena" %}
+        <h3>Rešitev</h3>
+        <p class="besedilo">{{ prijava.resitev }}</p>
+        <p><small>Zaključeno {{ prijava.resena_ob | cas }}</small></p>
+      {% endif %}
+    </section>
+
+    {% block obravnava %}{% endblock %}
+  </div>
+{% endblock %}

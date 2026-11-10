@@ -29,3 +29,11 @@ def ustvari(k, id_prijavitelja, id_opreme, id_ucilnice, naslov, opis):
         (id_prijavitelja, id_opreme, id_ucilnice, naslov, opis),
     )
     return k.lastrowid
+
+
+def za_prijavitelja(k, id_uporabnika):
+    k.execute(
+        OSNOVNA_POIZVEDBA + " WHERE p.prijavitelj_id = %s ORDER BY p.ustvarjena_ob DESC, p.id DESC",
+        (id_uporabnika,),
+    )
+    return k.fetchall()

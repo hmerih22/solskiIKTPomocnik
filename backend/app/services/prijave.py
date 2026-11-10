@@ -9,6 +9,13 @@ from ..repositories import oprema as repo_oprema
 from ..repositories import prijave as repo_prijave
 from ..repositories import ucilnice as repo_ucilnice
 
+STATUSI = {"nova": "Nova", "v_obravnavi": "V obravnavi", "resena": "Rešena"}
+
+
+def lahko_vidi(uporabnik, prijava):
+    """Prijavo vidijo prijavitelj, IKT skrbniki in administratorji (US-05, US-06)."""
+    return prijava["prijavitelj_id"] == uporabnik.id or uporabnik.je_skrbnik
+
 
 def oddaj(uporabnik, id_opreme, id_ucilnice, naslov, opis):
     """Odda novo prijavo težave (US-05). Vrne id prijave.

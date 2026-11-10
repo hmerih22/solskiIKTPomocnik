@@ -70,3 +70,7 @@
   </table>
   </div>
 {% endmacro %}
+
+{% macro status_prijave(status) %}
+  <span class="znacka znacka-{{ status }}">{{ statusi_prijav[status] }}</span>
+{% endmacro %}
