@@ -6,10 +6,11 @@ from flask_login import current_user, login_required
 from .auth import zahteva_vlogo
 from .db import transakcija
 from .napake import PoslovnaNapaka
-from .obrazci import ObrazecPrazen, ObrazecPrijavaTezave, ObrazecResitev
+from .obrazci import ObrazecPrazen, ObrazecPrerazporeditev, ObrazecPrijavaTezave, ObrazecResitev
 from .repositories import oprema as repo_oprema
 from .repositories import prijave as repo_prijave
 from .repositories import ucilnice as repo_ucilnice
+from .repositories import uporabniki as repo_uporabniki
 from .services import prijave as storitev
 
 bp = Blueprint("prijave", __name__, url_prefix="/prijave")
@@ -83,8 +84,14 @@ def vse():
 def podrobnosti(id_prijave):
     with transakcija() as k:
         prijava = _najdi_ali_404(k, id_prijave)
+        skrbniki = repo_uporabniki.aktivni_skrbniki(k) if current_user.je_administrator else []
+
+    prerazporeditev = ObrazecPrerazporeditev()
+    prerazporeditev.skrbnik_id.choices = [(s["id"], f"{s['ime']} {s['priimek']}") for s in skrbniki]
+    prerazporeditev.skrbnik_id.data = prijava["skrbnik_id"]
+
     return render_template("prijave/podrobnosti.html", prijava=prijava, prazen=ObrazecPrazen(),
-                           resitev=ObrazecResitev(),
+                           resitev=ObrazecResitev(), prerazporeditev=prerazporeditev,
                            lahko_zakljuci=storitev.lahko_zakljuci(current_user, prijava))
 
 
@@ -116,4 +123,19 @@ def zakljucek(id_prijave):
             flash("Prijava je zaključena kot rešena.", "uspeh")
         except PoslovnaNapaka as e:
             flash(e.sporocilo, "napaka")
+    return redirect(url_for("prijave.podrobnosti", id_prijave=id_prijave))
+
+
+@bp.post("/<int:id_prijave>/prerazporeditev")
+@zahteva_vlogo("administrator")
+def prerazporeditev(id_prijave):
+    # Ali je izbrani uporabnik ustrezen (aktiven skrbnik), preveri storitev,
+    # zato tu preverimo samo CSRF in preberemo izbrani id.
+    if not ObrazecPrazen().validate_on_submit():
+        abort(400)
+    try:
+        storitev.prerazporedi(current_user, id_prijave, request.form.get("skrbnik_id", type=int))
+        flash("Prijava je prerazporejena.", "uspeh")
+    except PoslovnaNapaka as e:
+        flash(e.sporocilo, "napaka")
     return redirect(url_for("prijave.podrobnosti", id_prijave=id_prijave))

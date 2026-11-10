@@ -121,3 +121,9 @@ class ObrazecResitev(FlaskForm):
                             validators=[DataRequired("Pred zaključkom vnesi opis rešitve."),
                                         Length(max=5000)])
     potrdi = SubmitField("Zaključi kot rešeno")
+
+
+class ObrazecPrerazporeditev(FlaskForm):
+    # Izbire (aktivni skrbniki) se nastavijo v poti.
+    skrbnik_id = SelectField("Novi odgovorni skrbnik", coerce=int)
+    potrdi = SubmitField("Prerazporedi")

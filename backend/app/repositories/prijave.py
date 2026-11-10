@@ -80,3 +80,12 @@ def zakljuci(k, id_prijave, resitev, cas):
         (resitev, cas, id_prijave),
     )
     return k.rowcount
+
+
+def prerazporedi(k, id_prijave, id_skrbnika):
+    """Zamenja odgovornega skrbnika; čas prvega prevzema ostane nespremenjen."""
+    k.execute(
+        "UPDATE prijava_tezave SET skrbnik_id = %s WHERE id = %s AND status = 'v_obravnavi'",
+        (id_skrbnika, id_prijave),
+    )
+    return k.rowcount

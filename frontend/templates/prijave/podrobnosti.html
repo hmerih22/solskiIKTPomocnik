@@ -60,6 +60,15 @@
       {% elif prijava.status == "v_obravnavi" %}
         <p>Prijavo obravnava {{ prijava.skrbnik_ime }} {{ prijava.skrbnik_priimek }}.</p>
       {% endif %}
+
+      {% if current_user.je_administrator and prijava.status == "v_obravnavi" %}
+        <h3>Prerazporeditev</h3>
+        <form method="post" action="{{ url_for('prijave.prerazporeditev', id_prijave=prijava.id) }}">
+          {{ prazen.hidden_tag() }}
+          {{ m.polje(prerazporeditev.skrbnik_id) }}
+          {{ prerazporeditev.potrdi(class="gumb gumb-drugotni") }}
+        </form>
+      {% endif %}
     </section>
     {% endif %}
   </div>

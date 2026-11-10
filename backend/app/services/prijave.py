@@ -11,6 +11,7 @@ from ..napake import PoslovnaNapaka, Prepovedano
 from ..repositories import oprema as repo_oprema
 from ..repositories import prijave as repo_prijave
 from ..repositories import ucilnice as repo_ucilnice
+from ..repositories import uporabniki as repo_uporabniki
 
 STATUSI = {"nova": "Nova", "v_obravnavi": "V obravnavi", "resena": "Rešena"}
 
@@ -21,8 +22,10 @@ def lahko_vidi(uporabnik, prijava):
 
 
 def lahko_zakljuci(uporabnik, prijava):
-    """Zaključi lahko samo odgovorni skrbnik prijave v obravnavi."""
-    return prijava["status"] == "v_obravnavi" and prijava["skrbnik_id"] == uporabnik.id
+    """Prijavo v obravnavi zaključi odgovorni skrbnik ali administrator."""
+    if prijava["status"] != "v_obravnavi":
+        return False
+    return prijava["skrbnik_id"] == uporabnik.id or uporabnik.je_administrator
 
 
 def oddaj(uporabnik, id_opreme, id_ucilnice, naslov, opis):
@@ -64,7 +67,7 @@ def prevzemi(uporabnik, id_prijave):
 
 
 def zakljuci(uporabnik, id_prijave, resitev):
-    """Odgovorni skrbnik zaključi prijavo v obravnavi z opisom rešitve.
+    """Odgovorni skrbnik ali administrator zaključi prijavo v obravnavi z rešitvijo.
 
     Zaključek ne spremeni stanja opreme: to skrbnik naredi posebej (US-07).
     """
@@ -84,3 +87,30 @@ def zakljuci(uporabnik, id_prijave, resitev):
             raise PoslovnaNapaka("Pred zaključkom vnesi opis rešitve.")
 
         repo_prijave.zakljuci(k, id_prijave, resitev, zdaj_utc())
+
+
+def prerazporedi(uporabnik, id_prijave, id_novega_skrbnika):
+    """Administrator dodeli prijavo v obravnavi drugemu skrbniku (US-06).
+
+    Novi skrbnik mora biti aktiven IKT skrbnik ali administrator. Čas prvega
+    prevzema ostane nespremenjen.
+    """
+    if not uporabnik.je_administrator:
+        raise Prepovedano()
+
+    with transakcija() as k:
+        prijava = repo_prijave.zakleni(k, id_prijave)
+        if prijava is None:
+            raise PoslovnaNapaka("Prijava ne obstaja.")
+        if prijava["status"] != "v_obravnavi":
+            raise PoslovnaNapaka("Prerazporediti je mogoče samo prijavo v obravnavi.")
+
+        # Zaklenemo novega skrbnika, da ga medtem nihče ne deaktivira.
+        novi = repo_uporabniki.zakleni(k, id_novega_skrbnika) if id_novega_skrbnika else None
+        if (novi is None or not novi["aktiven"]
+                or novi["vloga"] not in ("ikt_skrbnik", "administrator")):
+            raise PoslovnaNapaka(
+                "Prijavo lahko dodeliš samo aktivnemu IKT skrbniku ali administratorju."
+            )
+
+        repo_prijave.prerazporedi(k, id_prijave, id_novega_skrbnika)
