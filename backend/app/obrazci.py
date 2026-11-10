@@ -93,3 +93,9 @@ class ObrazecTermin(FlaskForm):
                                validators=[DataRequired("Vnesi datum in čas konca.")])
     preveri = SubmitField("Preveri termin")
     potrdi = SubmitField("Potrdi rezervacijo")
+
+
+class ObrazecPreklic(FlaskForm):
+    razlog = TextAreaField("Razlog preklica", filters=[_ocisti],
+                           validators=[Optional(), Length(max=2000)])
+    potrdi = SubmitField("Prekliči rezervacijo")

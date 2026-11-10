@@ -25,11 +25,11 @@
 {% endmacro %}
 
 {# Tabela rezervacij za stran Moje rezervacije. #}
-{% macro tabela_rezervacij(rezervacije, zdaj, preklicane=false) %}
+{% macro tabela_rezervacij(rezervacije, zdaj, preklicane=false, dejanja=false) %}
   <div class="tabela-ovoj">
   <table class="tabela">
     <thead>
-      <tr><th>Oprema</th><th>Termin</th><th>Status</th>{% if preklicane %}<th>Razlog preklica</th>{% endif %}</tr>
+      <tr><th>Oprema</th><th>Termin</th><th>Status</th>{% if preklicane %}<th>Razlog preklica</th>{% endif %}{% if dejanja %}<th>Dejanja</th>{% endif %}</tr>
     </thead>
     <tbody>
       {% for r in rezervacije %}
@@ -43,7 +43,7 @@
         <td>
           {% if r.status == "preklicana" %}
             <span class="znacka znacka-siva">Preklicana</span>
-            {% if r.preklicana_ob %}<br><small>{{ r.preklicana_ob | cas }}</small>{% endif %}
+            <br><small>{{ r.preklicana_ob | cas }}, {{ r.preklical_ime }} {{ r.preklical_priimek }}</small>
           {% elif r.konec <= zdaj %}
             <span class="znacka znacka-siva">Pretekla</span>
           {% elif r.zacetek <= zdaj %}
@@ -53,6 +53,17 @@
           {% endif %}
         </td>
         {% if preklicane %}<td>{{ r.razlog_preklica or "—" }}</td>{% endif %}
+        {% if dejanja %}
+        <td class="dejanja">
+          {% if lahko_preklice(current_user, r) %}
+            <form method="post" action="{{ url_for('rezervacije.preklic', id_rezervacije=r.id) }}"
+                  onsubmit="return confirm('Res želiš preklicati to rezervacijo?');">
+              {{ obrazec.hidden_tag() }}
+              <button class="gumb gumb-majhen gumb-nevarno" type="submit">Prekliči</button>
+            </form>
+          {% endif %}
+        </td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>

@@ -1,5 +1,5 @@
-"""Rezervacije opreme: preverjanje termina (US-02), rezervacija (US-03)
-in pregled lastnih rezervacij (US-04)."""
+"""Rezervacije opreme: preverjanje termina (US-02), rezervacija (US-03),
+pregled in preklic rezervacij (US-04)."""
 
 from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
@@ -7,7 +7,8 @@ from flask_login import current_user, login_required
 from .cas import v_utc, zdaj_utc
 from .db import transakcija
 from .napake import PoslovnaNapaka
-from .obrazci import ObrazecTermin
+from .obrazci import ObrazecPreklic, ObrazecTermin
+from .pomocniki import pot_nazaj
 from .repositories import oprema as repo_oprema
 from .repositories import rezervacije as repo_rezervacije
 from .services import rezervacije as storitev
@@ -63,4 +64,21 @@ def moje():
     preklicane = [r for r in vse if r["status"] == "preklicana"]
 
     return render_template("rezervacije/moje.html", prihodnje=prihodnje, pretekle=pretekle,
-                           preklicane=preklicane, zdaj=zdaj)
+                           preklicane=preklicane, zdaj=zdaj, obrazec=ObrazecPreklic(),
+                           lahko_preklice=storitev.lahko_preklice)
+
+
+@bp.post("/<int:id_rezervacije>/preklic")
+@login_required
+def preklic(id_rezervacije):
+    obrazec = ObrazecPreklic()
+    if not obrazec.validate_on_submit():
+        flash("Obrazec ni veljaven. Osveži stran in poskusi znova.", "napaka")
+    else:
+        try:
+            storitev.preklici(current_user, id_rezervacije, obrazec.razlog.data)
+            flash("Rezervacija je preklicana.", "uspeh")
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
+    # Nazaj na stran, s katere je prišla zahteva (Moje ali Vse rezervacije).
+    return redirect(pot_nazaj("rezervacije.moje"))
