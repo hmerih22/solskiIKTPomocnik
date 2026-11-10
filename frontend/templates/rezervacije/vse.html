@@ -26,7 +26,11 @@
       {% for r in rezervacije %}
       <tr>
         <td>{{ r.uporabnik_ime }} {{ r.uporabnik_priimek }}</td>
-        <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small></td>
+        <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small>
+          {% if r.status == "aktivna" and r.konec > zdaj and r.oprema_stanje == "nedelujoca" %}
+            <div class="opozorilo-vrstica">⚠ Oprema je nedelujoča – rezervacija ni samodejno preklicana.</div>
+          {% endif %}
+        </td>
         <td>{{ r.zacetek | cas }} –<br>{{ r.konec | cas }}</td>
         <td>{{ m.stanje_opreme(r.oprema_stanje) }}</td>
         <td>

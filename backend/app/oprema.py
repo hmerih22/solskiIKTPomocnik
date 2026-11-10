@@ -30,12 +30,18 @@ def spremeni_stanje(id_opreme):
         abort(400)
     stanje = request.form.get("stanje")
     try:
-        storitev_evidence.spremeni_stanje_opreme(current_user, id_opreme, stanje)
+        prihodnje = storitev_evidence.spremeni_stanje_opreme(current_user, id_opreme, stanje)
     except PoslovnaNapaka as e:
         flash(e.sporocilo, "napaka")
     else:
         if stanje == "nedelujoca":
             flash("Oprema je označena kot nedelujoča. Nove rezervacije niso več mogoče.", "uspeh")
+            if prihodnje:
+                flash(
+                    f"Pozor: oprema ima prihodnje rezervacije ({prihodnje}). Ostanejo v evidenci "
+                    "z opozorilom; po potrebi jih prekliči z razlogom na strani Vse rezervacije.",
+                    "opozorilo",
+                )
         else:
             flash("Oprema je ponovno označena kot uporabna.", "uspeh")
     # Nazaj na stran, s katere je prišla zahteva (seznam opreme ali prijava).

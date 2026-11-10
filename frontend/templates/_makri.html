@@ -36,7 +36,7 @@
       <tr>
         <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small>
           {% if not preklicane and r.konec > zdaj and r.oprema_stanje == "nedelujoca" %}
-            <div class="opozorilo-vrstica">⚠ Oprema je označena kot nedelujoča.</div>
+            <div class="opozorilo-vrstica">⚠ Oprema je označena kot nedelujoča. Rezervacija ni samodejno preklicana.</div>
           {% endif %}
         </td>
         <td>{{ r.zacetek | cas }} –<br>{{ r.konec | cas }}</td>

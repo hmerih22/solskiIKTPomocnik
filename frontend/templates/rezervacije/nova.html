@@ -40,6 +40,9 @@
 
     <section class="kartica">
       <h2>Že zasedeni termini</h2>
+      {% if oprema.stanje != "uporabna" and zasedeni %}
+        <div class="sporocilo sporocilo-opozorilo">Oprema je nedelujoča. Spodnje rezervacije ostanejo v evidenci, dokler jih kdo ne prekliče.</div>
+      {% endif %}
       {% if zasedeni %}
         <ul class="seznam">
           {% for z in zasedeni %}
