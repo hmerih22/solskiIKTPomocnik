@@ -20,6 +20,11 @@ def lahko_vidi(uporabnik, prijava):
     return prijava["prijavitelj_id"] == uporabnik.id or uporabnik.je_skrbnik
 
 
+def lahko_zakljuci(uporabnik, prijava):
+    """Zaključi lahko samo odgovorni skrbnik prijave v obravnavi."""
+    return prijava["status"] == "v_obravnavi" and prijava["skrbnik_id"] == uporabnik.id
+
+
 def oddaj(uporabnik, id_opreme, id_ucilnice, naslov, opis):
     """Odda novo prijavo težave (US-05). Vrne id prijave.
 
@@ -56,3 +61,26 @@ def prevzemi(uporabnik, id_prijave):
             if repo_prijave.najdi(k, id_prijave) is None:
                 raise PoslovnaNapaka("Prijava ne obstaja.")
             raise PoslovnaNapaka("Prijavo je že prevzel drug skrbnik.")
+
+
+def zakljuci(uporabnik, id_prijave, resitev):
+    """Odgovorni skrbnik zaključi prijavo v obravnavi z opisom rešitve.
+
+    Zaključek ne spremeni stanja opreme: to skrbnik naredi posebej (US-07).
+    """
+    if not uporabnik.je_skrbnik:
+        raise Prepovedano()
+    resitev = (resitev or "").strip()
+
+    with transakcija() as k:
+        prijava = repo_prijave.zakleni(k, id_prijave)
+        if prijava is None:
+            raise PoslovnaNapaka("Prijava ne obstaja.")
+        if not lahko_zakljuci(uporabnik, prijava):
+            if prijava["status"] != "v_obravnavi":
+                raise PoslovnaNapaka("Zaključiti je mogoče samo prijavo v obravnavi.")
+            raise Prepovedano()
+        if not resitev:
+            raise PoslovnaNapaka("Pred zaključkom vnesi opis rešitve.")
+
+        repo_prijave.zakljuci(k, id_prijave, resitev, zdaj_utc())

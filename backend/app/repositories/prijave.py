@@ -61,3 +61,22 @@ def prevzemi(k, id_prijave, id_skrbnika, cas):
         (id_skrbnika, cas, id_prijave),
     )
     return k.rowcount
+
+
+def zakleni(k, id_prijave):
+    """Prebere prijavo in zaklene njen zapis do konca transakcije."""
+    k.execute(
+        "SELECT id, prijavitelj_id, status, skrbnik_id, prevzeta_ob FROM prijava_tezave"
+        " WHERE id = %s FOR UPDATE",
+        (id_prijave,),
+    )
+    return k.fetchone()
+
+
+def zakljuci(k, id_prijave, resitev, cas):
+    k.execute(
+        "UPDATE prijava_tezave SET status = 'resena', resitev = %s, resena_ob = %s"
+        " WHERE id = %s AND status = 'v_obravnavi'",
+        (resitev, cas, id_prijave),
+    )
+    return k.rowcount

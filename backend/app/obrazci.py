@@ -114,3 +114,10 @@ class ObrazecPrijavaTezave(FlaskForm):
     oprema_id = SelectField("Oprema", coerce=int, default=0)
     ucilnica_id = SelectField("Učilnica", coerce=int, default=0)
     potrdi = SubmitField("Oddaj prijavo")
+
+
+class ObrazecResitev(FlaskForm):
+    resitev = TextAreaField("Opis rešitve", filters=[_ocisti],
+                            validators=[DataRequired("Pred zaključkom vnesi opis rešitve."),
+                                        Length(max=5000)])
+    potrdi = SubmitField("Zaključi kot rešeno")

@@ -50,6 +50,16 @@
       {% elif prijava.status == "resena" %}
         <p>Prijava je rešena.</p>
       {% endif %}
+
+      {% if lahko_zakljuci %}
+        <form method="post" action="{{ url_for('prijave.zakljucek', id_prijave=prijava.id) }}" novalidate>
+          {{ resitev.hidden_tag() }}
+          {{ m.polje(resitev.resitev, rows=4, placeholder="Opiši izvedene ukrepe in rešitev") }}
+          {{ resitev.potrdi(class="gumb") }}
+        </form>
+      {% elif prijava.status == "v_obravnavi" %}
+        <p>Prijavo obravnava {{ prijava.skrbnik_ime }} {{ prijava.skrbnik_priimek }}.</p>
+      {% endif %}
     </section>
     {% endif %}
   </div>

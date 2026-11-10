@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 from .auth import zahteva_vlogo
 from .db import transakcija
 from .napake import PoslovnaNapaka
-from .obrazci import ObrazecPrazen, ObrazecPrijavaTezave
+from .obrazci import ObrazecPrazen, ObrazecPrijavaTezave, ObrazecResitev
 from .repositories import oprema as repo_oprema
 from .repositories import prijave as repo_prijave
 from .repositories import ucilnice as repo_ucilnice
@@ -83,7 +83,9 @@ def vse():
 def podrobnosti(id_prijave):
     with transakcija() as k:
         prijava = _najdi_ali_404(k, id_prijave)
-    return render_template("prijave/podrobnosti.html", prijava=prijava, prazen=ObrazecPrazen())
+    return render_template("prijave/podrobnosti.html", prijava=prijava, prazen=ObrazecPrazen(),
+                           resitev=ObrazecResitev(),
+                           lahko_zakljuci=storitev.lahko_zakljuci(current_user, prijava))
 
 
 @bp.post("/<int:id_prijave>/prevzem")
@@ -96,4 +98,22 @@ def prevzem(id_prijave):
         flash("Prijavo si prevzel. Zdaj si zanjo odgovoren.", "uspeh")
     except PoslovnaNapaka as e:
         flash(e.sporocilo, "napaka")
+    return redirect(url_for("prijave.podrobnosti", id_prijave=id_prijave))
+
+
+
+@bp.post("/<int:id_prijave>/zakljucek")
+@zahteva_vlogo("ikt_skrbnik")
+def zakljucek(id_prijave):
+    obrazec = ObrazecResitev()
+    if not obrazec.validate_on_submit():
+        for napake in obrazec.errors.values():
+            for napaka in napake:
+                flash(napaka, "napaka")
+    else:
+        try:
+            storitev.zakljuci(current_user, id_prijave, obrazec.resitev.data)
+            flash("Prijava je zaključena kot rešena.", "uspeh")
+        except PoslovnaNapaka as e:
+            flash(e.sporocilo, "napaka")
     return redirect(url_for("prijave.podrobnosti", id_prijave=id_prijave))
