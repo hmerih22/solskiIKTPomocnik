@@ -186,3 +186,20 @@ def jutri_ob(ura, minuta=0):
 
     jutri = zdaj_utc() + timedelta(days=1)
     return jutri.replace(hour=ura, minute=minuta, second=0, microsecond=0)
+
+
+def ustvari_prijavo(prijavitelj_id, oprema_id=None, ucilnica_id=None, naslov="Ne dela"):
+    """Nova prijava (status 'nova', brez skrbnika). Vrne id."""
+    with transakcija() as k:
+        k.execute(
+            "INSERT INTO prijava_tezave (prijavitelj_id, oprema_id, ucilnica_id, naslov, opis)"
+            " VALUES (%s, %s, %s, %s, 'Opis težave')",
+            (prijavitelj_id, oprema_id, ucilnica_id, naslov),
+        )
+        return k.lastrowid
+
+
+def preberi_prijavo(id_prijave):
+    with transakcija() as k:
+        k.execute("SELECT * FROM prijava_tezave WHERE id = %s", (id_prijave,))
+        return k.fetchone()
