@@ -6,7 +6,7 @@ from flask_login import current_user, login_required
 from .auth import zahteva_vlogo
 from .db import transakcija
 from .napake import PoslovnaNapaka
-from .obrazci import ObrazecPrijavaTezave
+from .obrazci import ObrazecPrazen, ObrazecPrijavaTezave
 from .repositories import oprema as repo_oprema
 from .repositories import prijave as repo_prijave
 from .repositories import ucilnice as repo_ucilnice
@@ -83,4 +83,17 @@ def vse():
 def podrobnosti(id_prijave):
     with transakcija() as k:
         prijava = _najdi_ali_404(k, id_prijave)
-    return render_template("prijave/podrobnosti.html", prijava=prijava)
+    return render_template("prijave/podrobnosti.html", prijava=prijava, prazen=ObrazecPrazen())
+
+
+@bp.post("/<int:id_prijave>/prevzem")
+@zahteva_vlogo("ikt_skrbnik")
+def prevzem(id_prijave):
+    if not ObrazecPrazen().validate_on_submit():
+        abort(400)
+    try:
+        storitev.prevzemi(current_user, id_prijave)
+        flash("Prijavo si prevzel. Zdaj si zanjo odgovoren.", "uspeh")
+    except PoslovnaNapaka as e:
+        flash(e.sporocilo, "napaka")
+    return redirect(url_for("prijave.podrobnosti", id_prijave=id_prijave))

@@ -47,3 +47,17 @@ def vse(k, status=None):
     else:
         k.execute(OSNOVNA_POIZVEDBA + " ORDER BY p.ustvarjena_ob DESC, p.id DESC")
     return k.fetchall()
+
+
+def prevzemi(k, id_prijave, id_skrbnika, cas):
+    """Pogojna posodobitev: uspe samo, če je prijava še 'nova' (ADR-0006).
+
+    Vrne število spremenjenih vrstic. Če dva skrbnika prijavo prevzameta
+    hkrati, je pri drugem rezultat 0, ker status ni več 'nova'.
+    """
+    k.execute(
+        "UPDATE prijava_tezave SET status = 'v_obravnavi', skrbnik_id = %s, prevzeta_ob = %s"
+        " WHERE id = %s AND status = 'nova'",
+        (id_skrbnika, cas, id_prijave),
+    )
+    return k.rowcount

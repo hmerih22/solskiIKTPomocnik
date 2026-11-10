@@ -24,6 +24,10 @@ def _ocisti(vrednost):
     return vrednost.strip() if isinstance(vrednost, str) else vrednost
 
 
+class ObrazecPrazen(FlaskForm):
+    """Obrazec brez polj – samo za CSRF zaščito gumbov (npr. »Prevzemi«)."""
+
+
 class ObrazecPrijava(FlaskForm):
     email = EmailField("E-poštni naslov", filters=[_ocisti],
                        validators=[DataRequired(OBVEZNO),

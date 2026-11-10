@@ -37,6 +37,20 @@
       {% endif %}
     </section>
 
-    {% block obravnava %}{% endblock %}
+    {% if current_user.je_skrbnik %}
+    <section class="kartica">
+      <h2>Obravnava</h2>
+
+      {% if prijava.status == "nova" %}
+        <p>Prijava še nima odgovornega skrbnika.</p>
+        <form method="post" action="{{ url_for('prijave.prevzem', id_prijave=prijava.id) }}">
+          {{ prazen.hidden_tag() }}
+          <button class="gumb" type="submit">Prevzemi prijavo</button>
+        </form>
+      {% elif prijava.status == "resena" %}
+        <p>Prijava je rešena.</p>
+      {% endif %}
+    </section>
+    {% endif %}
   </div>
 {% endblock %}
