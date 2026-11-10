@@ -7,7 +7,14 @@
     <a class="gumb" href="{{ url_for('prijave.nova') }}">Prijavi težavo</a>
   </div>
 
-  {% block filtri %}{% endblock %}
+  {% if vse %}
+    <nav class="filtri" aria-label="Filter po stanju">
+      <a href="{{ url_for('prijave.vse') }}" {% if not filter_status %}class="izbran"{% endif %}>Vse</a>
+      {% for kljuc, naziv in statusi_prijav.items() %}
+        <a href="{{ url_for('prijave.vse', status=kljuc) }}" {% if filter_status == kljuc %}class="izbran"{% endif %}>{{ naziv }}</a>
+      {% endfor %}
+    </nav>
+  {% endif %}
 
   {% if prijave %}
   <div class="tabela-ovoj">

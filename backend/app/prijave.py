@@ -1,8 +1,9 @@
-"""Prijave težav: oddaja in pregled (US-05)."""
+"""Prijave težav: oddaja in pregled (US-05) ter obravnava (US-06)."""
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from .auth import zahteva_vlogo
 from .db import transakcija
 from .napake import PoslovnaNapaka
 from .obrazci import ObrazecPrijavaTezave
@@ -62,6 +63,19 @@ def moje():
         prijave = repo_prijave.za_prijavitelja(k, current_user.id)
     return render_template("prijave/seznam.html", prijave=prijave, naslov="Moje prijave",
                            vse=False, filter_status=None)
+
+
+@bp.get("/vse")
+@zahteva_vlogo("ikt_skrbnik")
+def vse():
+    """Vse prijave za IKT skrbnika in administratorja, s filtrom po stanju."""
+    status = request.args.get("status")
+    if status not in storitev.STATUSI:
+        status = None
+    with transakcija() as k:
+        prijave = repo_prijave.vse(k, status)
+    return render_template("prijave/seznam.html", prijave=prijave, naslov="Vse prijave",
+                           vse=True, filter_status=status)
 
 
 @bp.get("/<int:id_prijave>")

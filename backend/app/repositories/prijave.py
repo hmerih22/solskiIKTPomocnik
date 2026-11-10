@@ -37,3 +37,13 @@ def za_prijavitelja(k, id_uporabnika):
         (id_uporabnika,),
     )
     return k.fetchall()
+
+
+def vse(k, status=None):
+    """Vse prijave, po želji samo v podanem stanju; najnovejše najprej."""
+    if status:
+        k.execute(OSNOVNA_POIZVEDBA + " WHERE p.status = %s ORDER BY p.ustvarjena_ob DESC, p.id DESC",
+                  (status,))
+    else:
+        k.execute(OSNOVNA_POIZVEDBA + " ORDER BY p.ustvarjena_ob DESC, p.id DESC")
+    return k.fetchall()

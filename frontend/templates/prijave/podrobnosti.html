@@ -2,7 +2,10 @@
 {% import "_makri.html" as m with context %}
 {% block naslov %}Prijava #{{ prijava.id }}{% endblock %}
 {% block vsebina %}
-  <p><a href="{{ url_for('prijave.moje') }}">← Moje prijave</a></p>
+  <p>
+    {% if current_user.je_skrbnik %}<a href="{{ url_for('prijave.vse') }}">← Vse prijave</a>
+    {% else %}<a href="{{ url_for('prijave.moje') }}">← Moje prijave</a>{% endif %}
+  </p>
   <div class="naslovna-vrstica">
     <h1>#{{ prijava.id }} {{ prijava.naslov }}</h1>
     {{ m.status_prijave(prijava.status) }}
