@@ -57,3 +57,13 @@ def stevilo_aktivnih_administratorjev(k):
         " WHERE vloga = 'administrator' AND aktiven = TRUE"
     )
     return k.fetchone()["stevilo"]
+
+
+def aktivni_skrbniki(k):
+    """Uporabniki, ki lahko obravnavajo prijave (aktivni IKT skrbniki in administratorji)."""
+    k.execute(
+        f"SELECT {STOLPCI} FROM uporabnik"
+        " WHERE aktiven = TRUE AND vloga IN ('ikt_skrbnik', 'administrator')"
+        " ORDER BY priimek, ime"
+    )
+    return k.fetchall()

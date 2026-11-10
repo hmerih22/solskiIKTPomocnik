@@ -2,7 +2,7 @@
 
 Spletna aplikacija za **rezervacijo skupne šolske IKT-opreme** (prenosniki, projektorji, kompleti tablic) ter **prijavo in obravnavo tehničnih težav** znotraj ene šole.
 
-Trenutno so narejeni temelji aplikacije: prijava in odjava, vloge (učitelj, IKT skrbnik, administrator), osnovna predloga z menijem ter ustvarjanje uporabniških računov. Rezervacije opreme in prijave težav sledijo v naslednjih korakih.
+Narejen je celoten obseg MVP: prijava in vloge (učitelj, IKT skrbnik, administrator), upravljanje uporabnikov, učilnic in opreme, preverjanje razpoložljivosti, rezervacija brez prekrivanja terminov, pregled in preklic rezervacij, prijava težav, njihova obravnava (prevzem, zaključek, prerazporeditev) ter označevanje nedelujoče opreme.
 
 Uporabljene tehnologije: Python 3 s Flaskom, MySQL 8.4, Jinja predloge, Flask-Login in Flask-WTF.
 

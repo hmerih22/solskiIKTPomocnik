@@ -12,10 +12,11 @@ from flask import Flask, redirect, render_template, url_for
 from flask_login import login_required
 from flask_wtf.csrf import CSRFProtect
 
-from . import admin, auth, cli, db, oprema, rezervacije
+from . import admin, auth, cli, db, oprema, prijave, rezervacije
 from .cas import oblikuj
 from .config import nalozi_nastavitve
 from .napake import Prepovedano
+from .services.prijave import STATUSI as STATUSI_PRIJAV
 
 # Predloge in statične datoteke so v mapi frontend/, ne znotraj paketa app,
 # zato Flasku povemo, kje jih najde.
@@ -53,7 +54,7 @@ def create_app(test_config=None):
     csrf.init_app(app)
     auth.login_manager.init_app(app)
     cli.init_app(app)
-    for modul in (auth, oprema, rezervacije, admin):
+    for modul in (auth, oprema, rezervacije, prijave, admin):
         app.register_blueprint(modul.bp)
 
     @app.get("/")
@@ -82,7 +83,8 @@ def _registriraj_predloge(app):
 
     @app.context_processor
     def skupne_spremenljivke():
-        return {"nazivi_vlog": auth.NAZIVI_VLOG, "ima_pot": ima_pot}
+        return {"nazivi_vlog": auth.NAZIVI_VLOG, "ima_pot": ima_pot,
+                "statusi_prijav": STATUSI_PRIJAV}
 
 
 def _registriraj_napake(app):

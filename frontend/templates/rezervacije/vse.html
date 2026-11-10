@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Vse rezervacije{% endblock %}
+{% block vsebina %}
+  <div class="naslovna-vrstica">
+    <h1>Vse rezervacije</h1>
+    {% if prikazi_vse %}
+      <a class="gumb gumb-drugotni" href="{{ url_for('rezervacije.vse') }}">Samo prihodnje in tekoče</a>
+    {% else %}
+      <a class="gumb gumb-drugotni" href="{{ url_for('rezervacije.vse', prikaz='vse') }}">Prikaži tudi pretekle</a>
+    {% endif %}
+  </div>
+  <p class="namig">
+    {% if current_user.je_administrator %}Kot administrator lahko prekličeš katerokoli prihodnjo rezervacijo.
+    {% else %}Kot IKT skrbnik lahko prekličeš prihodnje rezervacije nedelujoče opreme.{% endif %}
+    Pri preklicu tuje rezervacije je razlog obvezen.
+  </p>
+
+  {% if rezervacije %}
+  <div class="tabela-ovoj">
+  <table class="tabela">
+    <thead>
+      <tr><th>Uporabnik</th><th>Oprema</th><th>Termin</th><th>Stanje opreme</th><th>Status</th><th>Preklic</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rezervacije %}
+      <tr>
+        <td>{{ r.uporabnik_ime }} {{ r.uporabnik_priimek }}</td>
+        <td>{{ r.oprema_naziv }}<br><small>{{ r.inventarna_stevilka }}</small>
+          {% if r.status == "aktivna" and r.konec > zdaj and r.oprema_stanje == "nedelujoca" %}
+            <div class="opozorilo-vrstica">⚠ Oprema je nedelujoča – rezervacija ni samodejno preklicana.</div>
+          {% endif %}
+        </td>
+        <td>{{ r.zacetek | cas }} –<br>{{ r.konec | cas }}</td>
+        <td>{{ m.stanje_opreme(r.oprema_stanje) }}</td>
+        <td>
+          {% if r.status == "preklicana" %}
+            <span class="znacka znacka-siva">Preklicana</span>
+            <br><small>{{ r.preklical_ime }} {{ r.preklical_priimek }}, {{ r.preklicana_ob | cas }}</small>
+            {% if r.razlog_preklica %}<br><small>Razlog: {{ r.razlog_preklica }}</small>{% endif %}
+          {% elif r.konec <= zdaj %}<span class="znacka znacka-siva">Pretekla</span>
+          {% elif r.zacetek <= zdaj %}<span class="znacka znacka-v_obravnavi">Poteka</span>
+          {% else %}<span class="znacka znacka-ok">Prihodnja</span>{% endif %}
+        </td>
+        <td>
+          {% if lahko_preklice(current_user, r) %}
+            <form method="post" action="{{ url_for('rezervacije.preklic', id_rezervacije=r.id) }}" class="preklic-obrazec">
+              {{ obrazec.hidden_tag() }}
+              <input type="hidden" name="naprej" value="{{ request.full_path }}">
+              {% if r.uporabnik_id != current_user.id %}
+                <input type="text" name="razlog" placeholder="Razlog (obvezno)" required maxlength="2000"
+                       aria-label="Razlog preklica">
+              {% endif %}
+              <button class="gumb gumb-majhen gumb-nevarno" type="submit">Prekliči</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+    <p class="prazno">Ni rezervacij.</p>
+  {% endif %}
+{% endblock %}

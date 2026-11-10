@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "_makri.html" as m with context %}
+{% block naslov %}Nova prijava težave{% endblock %}
+{% block vsebina %}
+  <section class="kartica srednja">
+    <h1>Prijava težave</h1>
+    <form method="post" novalidate>
+      {{ obrazec.hidden_tag() }}
+      {{ m.polje(obrazec.naslov, maxlength=150, placeholder="npr. Projektor ne prižge") }}
+      {{ m.polje(obrazec.opis, rows=5) }}
+      <p class="namig">Izberi opremo, učilnico ali oboje (npr. težava z omrežjem samo v učilnici).</p>
+      <div class="vrstica-polj">
+        {{ m.polje(obrazec.oprema_id) }}
+        {{ m.polje(obrazec.ucilnica_id) }}
+      </div>
+      {{ obrazec.potrdi(class="gumb") }}
+    </form>
+  </section>
+{% endblock %}

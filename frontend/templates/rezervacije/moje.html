@@ -9,7 +9,7 @@
 
   <h2>Prihodnje</h2>
   {% if prihodnje %}
-    {{ m.tabela_rezervacij(prihodnje, zdaj) }}
+    {{ m.tabela_rezervacij(prihodnje, zdaj, dejanja=true) }}
   {% else %}
     <p class="prazno">Nimaš prihodnjih rezervacij. <a href="{{ url_for('oprema.seznam') }}">Rezerviraj opremo</a>.</p>
   {% endif %}

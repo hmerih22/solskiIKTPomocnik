@@ -10,7 +10,9 @@ from mysql.connector.errors import IntegrityError
 
 from ..db import transakcija
 from ..napake import PoslovnaNapaka, Prepovedano
+from ..cas import zdaj_utc
 from ..repositories import oprema as repo_oprema
+from ..repositories import rezervacije as repo_rezervacije
 from ..repositories import ucilnice as repo_ucilnice
 
 STANJA = ("uporabna", "nedelujoca")
@@ -99,3 +101,24 @@ def shrani_opremo(uporabnik, id_opreme, naziv, inventarna_stevilka, vrsta, opis,
         if _je_podvojena_vrednost(e):
             raise napaka from e
         raise
+
+
+def spremeni_stanje_opreme(uporabnik, id_opreme, stanje):
+    """IKT skrbnik ali administrator označi opremo kot uporabno ali nedelujočo (US-07).
+
+    Zapis opreme se zaklene enako kot pri ustvarjanju rezervacije, zato
+    rezervacija ne more uspeti v trenutku, ko je oprema označena kot nedelujoča.
+
+    Obstoječe rezervacije se NE prekličejo samodejno. Funkcija vrne število
+    prihodnjih in tekočih aktivnih rezervacij, da lahko skrbnik dobi opozorilo.
+    """
+    if not uporabnik.je_skrbnik:
+        raise Prepovedano()
+    if stanje not in STANJA:
+        raise PoslovnaNapaka("Neveljavno stanje opreme.")
+
+    with transakcija() as k:
+        if repo_oprema.zakleni(k, id_opreme) is None:
+            raise PoslovnaNapaka("Oprema ne obstaja.")
+        repo_oprema.nastavi_stanje(k, id_opreme, stanje)
+        return len(repo_rezervacije.zasedeni_termini(k, id_opreme, zdaj_utc()))
