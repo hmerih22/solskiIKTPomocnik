@@ -15,6 +15,7 @@
       <a href="{{ url_for('domov') }}">Začetna stran</a>
       <a href="{{ url_for('oprema.seznam') }}">Oprema</a>
       <a href="{{ url_for('rezervacije.moje') }}">Moje rezervacije</a>
+      <a href="{{ url_for('prijave.nova') }}">Prijavi težavo</a>
       {% if current_user.je_skrbnik %}
         <span class="meni-locilo" aria-hidden="true"></span>
         <a href="{{ url_for('rezervacije.vse') }}">Vse rezervacije</a>

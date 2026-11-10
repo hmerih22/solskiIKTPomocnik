@@ -99,3 +99,14 @@ class ObrazecPreklic(FlaskForm):
     razlog = TextAreaField("Razlog preklica", filters=[_ocisti],
                            validators=[Optional(), Length(max=2000)])
     potrdi = SubmitField("Prekliči rezervacijo")
+
+
+class ObrazecPrijavaTezave(FlaskForm):
+    naslov = StringField("Naslov", filters=[_ocisti],
+                         validators=[DataRequired(OBVEZNO), Length(max=150)])
+    opis = TextAreaField("Opis težave", filters=[_ocisti],
+                         validators=[DataRequired(OBVEZNO), Length(max=5000)])
+    # Vrednost 0 pomeni »ni izbrano«. Izbire se nastavijo v poti (iz baze).
+    oprema_id = SelectField("Oprema", coerce=int, default=0)
+    ucilnica_id = SelectField("Učilnica", coerce=int, default=0)
+    potrdi = SubmitField("Oddaj prijavo")
