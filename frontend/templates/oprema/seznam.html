@@ -30,6 +30,18 @@
           {% if ima_pot("prijave.nova") %}
             <a class="gumb gumb-majhen gumb-drugotni" href="{{ url_for('prijave.nova', oprema_id=o.id) }}">Prijavi težavo</a>
           {% endif %}
+          {% if current_user.je_skrbnik %}
+            <form method="post" action="{{ url_for('oprema.spremeni_stanje', id_opreme=o.id) }}" class="v-vrstici">
+              {{ obrazec.hidden_tag() }}
+              {% if o.stanje == "uporabna" %}
+                <input type="hidden" name="stanje" value="nedelujoca">
+                <button class="gumb gumb-majhen gumb-nevarno" type="submit">Označi nedelujočo</button>
+              {% else %}
+                <input type="hidden" name="stanje" value="uporabna">
+                <button class="gumb gumb-majhen gumb-drugotni" type="submit">Označi uporabno</button>
+              {% endif %}
+            </form>
+          {% endif %}
           {% if current_user.je_administrator %}
             <a class="gumb gumb-majhen gumb-povezava" href="{{ url_for('admin.uredi_opremo', id_opreme=o.id) }}">Uredi</a>
           {% endif %}

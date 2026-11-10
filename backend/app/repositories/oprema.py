@@ -54,3 +54,7 @@ def posodobi(k, id_opreme, naziv, inventarna_stevilka, vrsta, opis, stanje, ucil
         " stanje = %s, ucilnica_id = %s WHERE id = %s",
         (naziv, inventarna_stevilka, vrsta, opis, stanje, ucilnica_id, id_opreme),
     )
+
+
+def nastavi_stanje(k, id_opreme, stanje):
+    k.execute("UPDATE oprema SET stanje = %s WHERE id = %s", (stanje, id_opreme))

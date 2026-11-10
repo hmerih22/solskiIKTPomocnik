@@ -69,6 +69,22 @@
           {{ prerazporeditev.potrdi(class="gumb gumb-drugotni") }}
         </form>
       {% endif %}
+
+      {% if prijava.oprema_id %}
+        <h3>Stanje opreme</h3>
+        <p class="namig">Zaključek prijave ne spremeni stanja opreme samodejno.</p>
+        <form method="post" action="{{ url_for('oprema.spremeni_stanje', id_opreme=prijava.oprema_id) }}">
+          {{ prazen.hidden_tag() }}
+          <input type="hidden" name="naprej" value="{{ request.path }}">
+          {% if prijava.oprema_stanje == "uporabna" %}
+            <input type="hidden" name="stanje" value="nedelujoca">
+            <button class="gumb gumb-nevarno" type="submit">Označi opremo kot nedelujočo</button>
+          {% else %}
+            <input type="hidden" name="stanje" value="uporabna">
+            <button class="gumb gumb-drugotni" type="submit">Označi opremo kot uporabno</button>
+          {% endif %}
+        </form>
+      {% endif %}
     </section>
     {% endif %}
   </div>
