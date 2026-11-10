@@ -88,3 +88,13 @@ def preklici(k, id_rezervacije, id_preklicatelja, razlog, cas):
         (cas, id_preklicatelja, razlog, id_rezervacije),
     )
     return k.rowcount
+
+
+def vse(k, samo_prihodnje_od=None):
+    """Vse rezervacije; če je podan čas, samo tiste, ki se končajo po njem."""
+    if samo_prihodnje_od is None:
+        k.execute(OSNOVNA_POIZVEDBA + " ORDER BY r.zacetek DESC")
+    else:
+        k.execute(OSNOVNA_POIZVEDBA + " WHERE r.konec > %s ORDER BY r.zacetek",
+                  (samo_prihodnje_od,))
+    return k.fetchall()

@@ -81,11 +81,17 @@ def lahko_preklice(uporabnik, rezervacija):
     """
     if rezervacija["status"] != "aktivna" or rezervacija["zacetek"] <= zdaj_utc():
         return False
-    return rezervacija["uporabnik_id"] == uporabnik.id
+    if rezervacija["uporabnik_id"] == uporabnik.id or uporabnik.je_administrator:
+        return True
+    return uporabnik.je_skrbnik and rezervacija["oprema_stanje"] == "nedelujoca"
 
 
 def preklici(uporabnik, id_rezervacije, razlog=None):
     """Prekliče prihodnjo aktivno rezervacijo (US-04).
+
+    - lastnik: lastno rezervacijo, razlog ni obvezen;
+    - IKT skrbnik: tujo rezervacijo NEDELUJOČE opreme, razlog je obvezen;
+    - administrator: katerokoli tujo rezervacijo, razlog je obvezen.
 
     Shrani se status 'preklicana', čas preklica in kdo jo je preklical.
     Preklicana rezervacija ne zaseda več termina.
@@ -97,7 +103,16 @@ def preklici(uporabnik, id_rezervacije, razlog=None):
         if rezervacija is None:
             raise PoslovnaNapaka("Rezervacija ne obstaja.")
         if rezervacija["uporabnik_id"] != uporabnik.id:
-            raise Prepovedano()
+            if uporabnik.je_administrator:
+                pass
+            elif uporabnik.je_skrbnik:
+                oprema = repo_oprema.najdi(k, rezervacija["oprema_id"])
+                if oprema["stanje"] != "nedelujoca":
+                    raise Prepovedano()
+            else:
+                raise Prepovedano()
+            if not razlog:
+                raise PoslovnaNapaka("Pri preklicu tuje rezervacije je razlog obvezen.")
         if rezervacija["status"] != "aktivna":
             raise PoslovnaNapaka("Rezervacija je že preklicana.")
         if rezervacija["zacetek"] <= zdaj_utc():

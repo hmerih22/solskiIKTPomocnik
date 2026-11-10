@@ -1,9 +1,10 @@
 """Rezervacije opreme: preverjanje termina (US-02), rezervacija (US-03),
 pregled in preklic rezervacij (US-04)."""
 
-from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from .auth import zahteva_vlogo
 from .cas import v_utc, zdaj_utc
 from .db import transakcija
 from .napake import PoslovnaNapaka
@@ -65,6 +66,19 @@ def moje():
 
     return render_template("rezervacije/moje.html", prihodnje=prihodnje, pretekle=pretekle,
                            preklicane=preklicane, zdaj=zdaj, obrazec=ObrazecPreklic(),
+                           lahko_preklice=storitev.lahko_preklice)
+
+
+@bp.get("/vse")
+@zahteva_vlogo("ikt_skrbnik")
+def vse():
+    """Vse rezervacije za IKT skrbnika in administratorja (privzeto prihodnje in tekoče)."""
+    prikazi_vse = request.args.get("prikaz") == "vse"
+    zdaj = zdaj_utc()
+    with transakcija() as k:
+        rezervacije = repo_rezervacije.vse(k, None if prikazi_vse else zdaj)
+    return render_template("rezervacije/vse.html", rezervacije=rezervacije, zdaj=zdaj,
+                           prikazi_vse=prikazi_vse, obrazec=ObrazecPreklic(),
                            lahko_preklice=storitev.lahko_preklice)
 
 

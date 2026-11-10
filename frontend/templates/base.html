@@ -17,7 +17,7 @@
       <a href="{{ url_for('rezervacije.moje') }}">Moje rezervacije</a>
       {% if current_user.je_skrbnik %}
         <span class="meni-locilo" aria-hidden="true"></span>
-        {# Povezave za IKT skrbnika se dodajo z naslednjimi uporabniškimi zgodbami. #}
+        <a href="{{ url_for('rezervacije.vse') }}">Vse rezervacije</a>
       {% endif %}
       {% if current_user.je_administrator %}
         <span class="meni-locilo" aria-hidden="true"></span>
